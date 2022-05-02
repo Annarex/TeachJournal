@@ -10,6 +10,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TeachJournal">
         <activity
+            android:name=".VActivity"
+            android:exported="false"
+            android:label="@string/title_activity_vactivity"
+            android:theme="@style/Theme.TeachJournal.NoActionBar" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
