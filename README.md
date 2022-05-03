@@ -1,0 +1,2 @@
+# TeachJournal
+init
