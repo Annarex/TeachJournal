@@ -19,4 +19,12 @@ class MainActivity : AppCompatActivity() {
 
         startActivityForResult(Intent.createChooser(intent, "Select a file"), 777)
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 777) {
+            val filePath = data?.data?.path
+        }
+    }
 }
