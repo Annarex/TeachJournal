@@ -4,6 +4,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.util.Log;
+import android.provider.CalendarContract;
 
 class MainActivity : AppCompatActivity() {
     //удалил комментарий
@@ -22,7 +24,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
         if (requestCode == 777) {
             val filePath = data?.data?.path
         }
