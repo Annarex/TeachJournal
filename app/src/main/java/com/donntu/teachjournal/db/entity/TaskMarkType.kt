@@ -3,11 +3,9 @@ package com.donntu.teachjournal.db.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "StudyGroup")
-class StudyGroup(
+@Entity(tableName = "TaskMarkType")
+class TaskMarkType (
     @PrimaryKey(autoGenerate = true)
-    val id_group: Int,
-    var title : String,
-    var abbr : String
-
+    val id_task_mark_type: Int,
+    val title: String
 )

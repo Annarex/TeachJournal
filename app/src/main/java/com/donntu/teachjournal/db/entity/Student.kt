@@ -6,11 +6,11 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "Student")
-class Student{
+class Student(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id_student: Int,
     val family: String,
     val name: String,
     val patronymic: String,
-    val id_group: Int,
-}
+    val id_group: Int
+)
