@@ -31,18 +31,23 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildToolsVersion '32.1.0 rc1'
 }
 
 dependencies {
+    implementation "io.reactivex.rxjava2:rxjava:2.1.8"
+    implementation "io.reactivex.rxjava2:rxandroid:2.0.1"
     // Room and Lifecycle dependencies
     implementation "androidx.room:room-runtime:2.4.2"
+    //implementation 'androidx.documentfile:documentfile:1.0.1'
     kapt "androidx.room:room-compiler:2.4.2"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
     // Coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1-native-mt'
+
     // Xml
-    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0'
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.0.0'
     implementation 'org.apache.poi:poi:4.0.0'
     implementation 'org.apache.poi:poi-ooxml:4.0.0'
     // Base
