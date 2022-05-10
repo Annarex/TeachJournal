@@ -1,8 +1,12 @@
 package com.donntu.teachjournal
 
+import androidx.room.Room
+import androidx.test.platform.app.InstrumentationRegistry
+import com.donntu.teachjournal.db.DBJournalHelper
 import org.junit.Test
 
 import org.junit.Assert.*
+import org.junit.Before
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -11,7 +15,12 @@ import org.junit.Assert.*
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+    fun createDb() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val db = Room.inMemoryDatabaseBuilder(context, DBJournalHelper::class.java)
+            // Allowing main thread queries, just for testing.
+            .allowMainThreadQueries()
+            .build()
+        val sleepDao = db.subjectDAO()
     }
 }

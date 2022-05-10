@@ -1,7 +1,9 @@
 package com.donntu.teachjournal
 
+import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.donntu.teachjournal.db.DBJournalHelper
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,10 +17,10 @@ import org.junit.Assert.*
  */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+    val db by lazy { DBJournalHelper.getDatabase(InstrumentationRegistry.getInstrumentation().targetContext) }
     @Test
     fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.donntu.teachjournal", appContext.packageName)
+        val all = db.studyGroupDAO().getAllGroupsWithStudents()
+        Log.d("STUD", all.toString() )
     }
 }
