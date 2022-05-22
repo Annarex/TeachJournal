@@ -25,7 +25,7 @@ interface StudyAttendMarkDAO {
     @Query("SELECT * FROM AttendMarkType")
     fun getAttendMarkType(): List<AttendMarkType>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)//В этом режиме будет оставлена старая запись и операция вставки не будет выполнена.
     fun insertAttendMarkType(amp: AttendMarkType):Long
 
     @Delete
