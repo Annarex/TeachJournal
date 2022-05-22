@@ -14,6 +14,9 @@ interface SubjectDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertSubject(amp: Subject):Long
 
+    @Query("SELECT id from(SELECT * from Subject WHERE title LIKE :tit and abbr LIKE :name LIMIT 1)")
+    fun isSubjectExist(tit: String, name:String): Long
+
     @Delete
     fun deleteSubject(amp: Subject)
 

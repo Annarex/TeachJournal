@@ -24,6 +24,9 @@ interface TaskAndTypeDAO {
     @Query("SELECT * FROM TaskType")
     fun getTaskType(): List<TaskType>
 
+    @Query("SELECT id from (SELECT * from TaskType WHERE title = :titl and abbr = :abbr LIMIT 1)")
+    fun isTaskTypeExist(titl:String, abbr:String): Long
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertTaskType(amp: TaskType):Long
 
