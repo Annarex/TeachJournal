@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.donntu.teachjournal.db.DBJournalHelper
+import com.donntu.teachjournal.db.entity.FlowStudents
 import com.donntu.teachjournal.db.entity.Student
 import com.donntu.teachjournal.db.entity.StudyGroup
 import org.apache.poi.ss.usermodel.WorkbookFactory
@@ -21,7 +22,7 @@ class ParseXML {
     constructor(context: Context){
         this.context = context
     }
-    fun readFromExcelFile(db: DBJournalHelper, uri: Uri) {
+    fun readFromExcelFile(db: DBJournalHelper, uri: Uri, ii: Long) {
         try {
             val inputStream = context?.getContentResolver()?.openInputStream(uri)
             val xlWb = WorkbookFactory.create(inputStream)
@@ -39,6 +40,7 @@ class ParseXML {
                     0L -> db.studyGroupDAO().insertStudyGroup(stgroup)
                     else -> idExist
                 }
+                db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ii, id_group = idgroup))
                 if (idExist == 0L) cn_new_records++
 
                 index += 2
