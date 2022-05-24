@@ -196,6 +196,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner.adapter = adapter
         spinner2.adapter = adapter2
         spinner3.adapter = adapter3
+
         //basicAlert
     }
 
@@ -244,21 +245,25 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
     }
 
     private fun fillGridView(){
-        var st = db.studentDAO().getStudent()
-        var count = db.studentDAO().getStudent().count()
-        var g = db.studyGroupDAO().getStudyGroupinSub()
-        var num = db.studyGroupDAO().getStudyGroupinSub().count()
+        //var st = db.studentDAO().getStudentGroup()
+        var count = db.studentDAO().getStudentGroup(ssubject).count()
+        //var g = db.studyGroupDAO().getStudyGroupinSub(ssubject)
+        //var num = db.studyGroupDAO().getStudyGroupinSub(ssubject).count()
         var arr: MutableList<String> = mutableListOf()
         var gr: MutableList<Long> = mutableListOf()
-        showToast(message = "Выбор! ${num}")
-        //gvMain = findViewById<View>(R.id.gridView1) as GridView
+        gvMain = findViewById<View>(R.id.gridView1) as GridView
         //gvMain!!.setAdapter(null)
+        gvMain!!.adapter = null
         when(ssubject) {
             0L -> showToast(message = "Не выбран журнал!")
             else -> {
                 if (count == 0) {
                     showToast(message = "Нет студентов!")
                 } else {
+                    var st = db.studentDAO().getStudentGroup(ssubject)
+                    //var count = db.studentDAO().getStudentGroup().count()
+                    var g = db.studyGroupDAO().getStudyGroupinSub(ssubject)
+                    var num = db.studyGroupDAO().getStudyGroupinSub(ssubject).count()
                     var data = listOf<String>("f", "g", "l")
                     //var ffl = db.flowStudentsDAO().getSubjectById(ssubject)
                     //var term = db.flowStudentsDAO().getSubjectById(ssubject).count()

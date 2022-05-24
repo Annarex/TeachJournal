@@ -17,8 +17,8 @@ interface StudyGroupDAO {
     @Query("SELECT * FROM StudyGroup")
     fun getStudyGroup(): List<StudyGroup>
 
-    @Query("SELECT * FROM StudyGroup as st, FlowStudents as fl WHERE st.id=fl.id_group")
-    fun getStudyGroupinSub(): List<StudyGroup>
+    @Query("SELECT * FROM StudyGroup as st, FlowStudents as fl WHERE st.id=fl.id_group AND fl.id_journal = :x")
+    fun getStudyGroupinSub(x: Long): List<StudyGroup>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertStudyGroup(amp: StudyGroup):Long
