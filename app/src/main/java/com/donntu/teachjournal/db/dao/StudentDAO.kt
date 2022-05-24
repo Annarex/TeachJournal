@@ -11,6 +11,9 @@ interface StudentDAO {
     @Query("SELECT * FROM Student ORDER BY id_group")
     fun getStudent(): List<Student>
 
+    @Query("SELECT * FROM Student as sst, StudyGroup as gg, FlowStudents as fl WHERE sst.id_group=gg.id AND gg.id=fl.id_group AND fl.id_journal = :x ORDER BY sst.id_group")
+    fun getStudentGroup(x: Long): List<Student>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertStudent(amp: Student): Long
 

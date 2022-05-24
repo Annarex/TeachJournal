@@ -17,6 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:clickable="false"
             android:minHeight="35dp"
             android:padding="15dp"
             android:textSize="16sp" />
