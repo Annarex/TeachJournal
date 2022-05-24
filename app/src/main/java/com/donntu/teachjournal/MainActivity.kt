@@ -9,22 +9,16 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.LiveData
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.donntu.teachjournal.db.DBJournalHelper
-import com.donntu.teachjournal.db.entity.Student
-import com.donntu.teachjournal.db.entity.StudyGroup
-import com.donntu.teachjournal.db.entity.Subject
-import com.donntu.teachjournal.db.entity.TaskType
+import com.donntu.teachjournal.db.entity.*
 import com.donntu.teachjournal.utils.ParseXML
-import com.donntu.teachjournal.utils.StInGrAdapter
 import java.util.*
 
 
@@ -54,8 +48,13 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             "Может быть", Toast.LENGTH_SHORT).show()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
     //var sp: Spinner? = null
     //var textView_msg: TextView? = null
+    var ssubject: Long = 0L
     val db by lazy { DBJournalHelper.getDatabase(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,8 +74,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     2 -> {
                         val ll = findViewById<LinearLayout>(R.id.layout2)
                         ll.removeAllViews();
-                        view?.let { basicAlert(it) }
+                        //view?.let { basicAlert(it) }
                         fillGridView()
+                        when(ssubject){
+                            0L -> showToast(message = "Журнал не выбран!")
+                            else -> {
+                                var flow = db.flowStudentsDAO().getFlowStudents()
+                                var gh = db.studyClassDAO().getStudyClass()
+                            }
+                        }
                     }
                 }
             }
@@ -114,9 +120,16 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                         ViewGroup.LayoutParams.WRAP_CONTENT
                                     )
                                     button_dynamic.text = arr[i]
-                                    var b = "@+id/button$i"
+                                    var b = "button$i"
                                     button_dynamic.setId(button4_Id)
                                     button4_Id++
+                                    button_dynamic.setBackgroundResource(R.drawable.rec)
+                                    button_dynamic.setOnClickListener(object : View.OnClickListener {
+                                        override fun onClick(view: View?) {
+                                            ssubject = type[i].id!!
+                                            showToast(message = "Кнопка нажата! ${ssubject}")
+                                        }
+                                    });
                                     //showToast(message = "Название: ${b}")
                                     ll.addView(button_dynamic)
                                     //ll.removeAllViews();
@@ -157,7 +170,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                             button_dynamic.setId(button4_Id)
                             button4_Id++
                             button_dynamic.setBackgroundResource(R.drawable.rec)
-                            button_dynamic.setOnClickListener{button_dynamic.setBackgroundColor(Color.argb(0,221,160,221))}
+                            //button_dynamic.setOnClickListener{button_dynamic.setBackgroundColor(Color.argb(0,221,160,221))}
                             //showToast(message = "Название: ${b}")
                             ll.addView(button_dynamic)
                             //linearLayout.removeAllViews();
@@ -213,12 +226,17 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         /*val recView = findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(this)
         recView.adapter = StInGrAdapter(all)*/
-        if(path.toString().endsWith("xls")){
-            //pb.visibility = View.VISIBLE
-            val a = ParseXML(context=this).readFromExcelFile(db, path!!);
-            //pb.visibility = View.INVISIBLE
+        when(ssubject) {
+            0L -> showToast(message = "Не выбрана дисциплина!")
+            else -> {
+                if (path.toString().endsWith("xls")) {
+                    //pb.visibility = View.VISIBLE
+                    ParseXML(context = this).readFromExcelFile(db, path!!, ssubject);
+                    //pb.visibility = View.INVISIBLE
+                }
+                fillGridView ()
+            }
         }
-        fillGridView()
     }
 
     inline fun <reified T> toArray(list: List<*>): Array<T> {
@@ -228,32 +246,52 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
     private fun fillGridView(){
         var st = db.studentDAO().getStudent()
         var count = db.studentDAO().getStudent().count()
-        var g = db.studyGroupDAO().getStudyGroup()
-        var num = db.studyGroupDAO().getStudyGroup().count()
+        var g = db.studyGroupDAO().getStudyGroupinSub()
+        var num = db.studyGroupDAO().getStudyGroupinSub().count()
         var arr: MutableList<String> = mutableListOf()
-        var o = st[0].id_group
-        for(j in 0..num-1) {
-            if(g[j].id==o){
-                arr+= g[j].title
-            }
-        }
-        for (i in 0..count - 1) {
-            if(o == st[i].id_group) {
-                arr += st[i].toString()
-            }
-            else{
-                o = st[i].id_group
-                for(j in 0..num-1) {
-                    if(g[j].id==o){ arr+= g[j].title }
+        var gr: MutableList<Long> = mutableListOf()
+        showToast(message = "Выбор! ${num}")
+        //gvMain = findViewById<View>(R.id.gridView1) as GridView
+        //gvMain!!.setAdapter(null)
+        when(ssubject) {
+            0L -> showToast(message = "Не выбран журнал!")
+            else -> {
+                if (count == 0) {
+                    showToast(message = "Нет студентов!")
+                } else {
+                    var data = listOf<String>("f", "g", "l")
+                    //var ffl = db.flowStudentsDAO().getSubjectById(ssubject)
+                    //var term = db.flowStudentsDAO().getSubjectById(ssubject).count()
+                    arr += "Название"
+                    var o = st[0].id_group
+                    showToast(message = "Выбор! ${count}")
+                    showToast(message = "Выбор! ${num}")
+                    for (j in 0..num - 1) {
+                        if (g[j].id == o) {
+                            arr += g[j].title
+                            showToast(message = "Выбор - ${g[j].id}")
+                        }
+                    }
+                    for (i in 0..count - 1) {
+                        if (o == st[i].id_group) {
+                            arr += st[i].toString()
+                        } else {
+                            o = st[i].id_group
+                            for (j in 0..num - 1) {
+                                if (g[j].id == o) {
+                                    arr += g[j].title
+                                }
+                            }
+                            arr += st[i].toString()
+                        }
+                    }
+                    adapterr = ArrayAdapter<String>(this, R.layout.item, R.id.tvText, arr)
+                    gvMain = findViewById<View>(R.id.gridView1) as GridView
+                    gvMain!!.setAdapter(adapterr)
+                    adjustGridView()
                 }
-                arr += st[i].toString()
             }
         }
-        //showToast(message = "Есть! ${idgroup}")
-        adapterr = ArrayAdapter<String>(this, R.layout.item, R.id.tvText, arr)
-        gvMain = findViewById<View>(R.id.gridView1) as GridView
-        gvMain!!.setAdapter(adapterr)
-        adjustGridView()
     }
 
     private fun adjustGridView() {
@@ -311,34 +349,47 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     val surname = sur.text.toString()
                     val middlename = mid.text.toString()
                     val groupe = grou.text.toString()
-                    if(name.trim().isNotEmpty() && surname.trim().isNotEmpty() && middlename.trim().isNotEmpty() && groupe.trim().isNotEmpty()) {
-                        val stgroup = StudyGroup(title = groupe, abbr = groupe)
-                        val idExist = db.studyGroupDAO().isStudyGroupExist(stgroup.abbr)
-                        val idgroup = when (idExist) {
-                            0L -> db.studyGroupDAO().insertStudyGroup(stgroup)
-                            else -> {
-                                idExist
-                            }
+                    when (ssubject) {
+                        0L -> showToast(message = "Не выбран журнал!")
+                        else -> {
+                            if (name.trim().isNotEmpty() && surname.trim()
+                                    .isNotEmpty() && middlename.trim().isNotEmpty() && groupe.trim()
+                                    .isNotEmpty()
+                            ) {
+                                val stgroup = StudyGroup(title = groupe, abbr = groupe)
+                                val idExist = db.studyGroupDAO().isStudyGroupExist(stgroup.abbr)
+                                val idgroup = when (idExist) {
+                                    0L -> {
+                                        db.studyGroupDAO().insertStudyGroup(stgroup)
+                                    }
+                                    else -> {
+                                        idExist
+                                    }
+                                }
+                                showToast(message = "Есть! ${idgroup}, ${ssubject}")
+                                var d = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ssubject, id_group = idgroup))
+                                showToast(message = "Добавили в flow!")
+                                showToast(message = "Есть! ${idgroup}")
+                                val student = Student(
+                                    family = surname,
+                                    name = name,
+                                    patronymic = middlename,
+                                    id_group = idgroup
+                                )
+                                val hasStudent = db.studentDAO().isStudentExistInGroup(
+                                    idgroup = idgroup,
+                                    family = surname,
+                                    name = name,
+                                    patronymic = middlename
+                                )
+                                if (hasStudent == 0L) {
+                                    students.add(student)
+                                }
+                                val idstudents = db.studentDAO().insertStudents(students)
+                                showToast(message = "Имя: ${name}, фамилия: ${surname}, отчество: ${middlename}, группа: ${groupe}")
+                            } else showToast(message = "Заполните все поля!")
                         }
-                        showToast(message = "Есть! ${idgroup}")
-                        val student = Student(
-                            family = surname,
-                            name = name,
-                            patronymic = middlename,
-                            id_group = idgroup
-                        )
-                        val hasStudent = db.studentDAO().isStudentExistInGroup(
-                            idgroup = idgroup,
-                            family = surname,
-                            name = name,
-                            patronymic = middlename
-                        )
-                        if (hasStudent == 0L) {
-                            students.add(student)
-                        }
-                        showToast(message = "Имя: ${name}, фамилия: ${surname}, отчество: ${middlename}, группа: ${groupe}")
                     }
-                    else showToast(message = "Заполните все поля!")
                 }
                 //cancel button click of custom layout
                 btCancl.setOnClickListener {
@@ -370,9 +421,11 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                             0L -> db.subjectDAO().insertSubject(sub)
                             else -> {
                                 idExist
-                                showToast(message = "Сокращенное: ${idExist}")
+                                //showToast(message = "Сокращенное: ${idExist}")
                             }
                         }
+                        var j = Journal(id_subject = idgroup, note = "2021 год")
+                        db.journalDAO().insertJournal(j)
                         showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
                     }
                     else showToast(message = "Заполните все поля!")

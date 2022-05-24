@@ -10,9 +10,9 @@ import java.io.Serializable
         onDelete = ForeignKey.CASCADE),
     ForeignKey(entity = StudyGroup::class,
         parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_journal"),
+        childColumns = arrayOf("id_group"),
         onDelete = ForeignKey.CASCADE)),
-    indices = [Index(value = ["id_group"]),Index(value = ["id_journal"])]
+    indices = [Index(value = ["id_journal"]),Index(value = ["id_group"])]
 )
 class FlowStudents (
     @PrimaryKey(autoGenerate = true)
