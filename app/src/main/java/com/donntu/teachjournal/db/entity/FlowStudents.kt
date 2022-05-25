@@ -12,7 +12,7 @@ import java.io.Serializable
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("id_group"),
         onDelete = ForeignKey.CASCADE)),
-    indices = [Index(value = ["id_journal"]),Index(value = ["id_group"])]
+    indices = [Index(value = ["id_journal"]),Index(value = ["id_group"]),Index(value = ["id_journal","id_group"], unique = true)]
 )
 class FlowStudents (
     @PrimaryKey(autoGenerate = true)

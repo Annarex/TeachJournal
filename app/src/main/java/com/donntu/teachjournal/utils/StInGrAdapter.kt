@@ -15,8 +15,8 @@ import com.donntu.teachjournal.db.entity_with_relate.StudentsInGroup
 class StInGrAdapter(private val students: List<StudentsInGroup>) : RecyclerView.Adapter<StInGrAdapter.MyViewHolder>() {
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val largeTextView: TextView = itemView.findViewById(R.id.textViewLarge)
-        val smallTextView: TextView = itemView.findViewById(R.id.textViewSmall)
+        //val largeTextView: TextView = itemView.findViewById(R.id.textViewLarge)
+        //val smallTextView: TextView = itemView.findViewById(R.id.textViewSmall)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
@@ -25,8 +25,8 @@ class StInGrAdapter(private val students: List<StudentsInGroup>) : RecyclerView.
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.largeTextView.text = students[position].group.abbr
-        holder.smallTextView.text = students[position].students.toString()
+        //holder.largeTextView.text = students[position].group.abbr
+        //holder.smallTextView.text = students[position].students.toString()
     }
 
     override fun getItemCount() = students.size

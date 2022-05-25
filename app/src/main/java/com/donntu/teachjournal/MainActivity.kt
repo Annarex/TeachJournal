@@ -16,10 +16,11 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.marginBottom
+import androidx.core.view.setPadding
 import com.donntu.teachjournal.db.DBJournalHelper
 import com.donntu.teachjournal.db.entity.*
 import com.donntu.teachjournal.utils.ParseXML
-import java.util.*
 
 
 var select: String? =null
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 // TODO Auto-generated method stub
+                view!!.clearFocus()
                 when(position){
                     1 -> {
                         val ll = findViewById<LinearLayout>(R.id.layout2)
@@ -75,10 +77,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                         val ll = findViewById<LinearLayout>(R.id.layout2)
                         ll.removeAllViews();
                         //view?.let { basicAlert(it) }
-                        fillGridView()
+                        //fillGridView()
+
                         when(ssubject){
                             0L -> showToast(message = "Журнал не выбран!")
                             else -> {
+                                showTable(1)
                                 var flow = db.flowStudentsDAO().getFlowStudents()
                                 var gh = db.studyClassDAO().getStudyClass()
                             }
@@ -94,8 +98,10 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
 
         val spinner2 = findViewById<Spinner>(R.id.spinner2)
         spinner2.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                // TODO Auto-generated method stub
+
+                view!!.clearFocus()
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,2)
@@ -148,7 +154,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         val spinner3 = findViewById<Spinner>(R.id.spinner3)
         spinner3.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                // TODO Auto-generated method stub
+                view!!.requestFocus()
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,3)
@@ -235,13 +241,119 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     ParseXML(context = this).readFromExcelFile(db, path!!, ssubject);
                     //pb.visibility = View.INVISIBLE
                 }
-                fillGridView ()
+                showTable(ssubject)
             }
         }
     }
 
     inline fun <reified T> toArray(list: List<*>): Array<T> {
         return (list as List<T>).toTypedArray()
+    }
+    fun creatTextView(
+        text:String,
+        w:Int = 100, h:Int = 100,
+        bg: Int = Color.rgb(250,218,221),
+        visible:Int = View.VISIBLE,
+        align: Int=View.TEXT_ALIGNMENT_INHERIT,
+        ts: Double = 14.0): TextView{
+        var view = TextView(this)  as TextView
+        view.text = text
+        view.width = w
+        view.height = h
+        view.setBackgroundColor(bg)
+        view.setPadding(15)
+        view.textSize = ts.toFloat()
+        view.visibility = visible
+        view.textAlignment = align
+        return  view
+    }
+    fun showTable(idJournal: Long) {
+        var count_class = 4
+        var count_work = 5
+        var wHead = 300
+        var hHead = 150
+        var wMain = 300
+        var hMain = 100
+        var wadd = 60
+        var items = db.studentDAO().getStudent()
+        var studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
+        var studentsFlow = db.studentDAO().getStudentGroup(idJournal)
+
+        val max_size: Int = (items.maxByOrNull{it.toString().length}).toString().length
+        val recView = findViewById<LinearLayout>(R.id.layout3)
+
+        for(gr in studyGroupsFlow){
+
+            val groupLine = LinearLayout(this)
+            groupLine.orientation = LinearLayout.HORIZONTAL
+            val tvGroup = creatTextView(text =""+gr.abbr, bg =Color.LTGRAY,h=hHead, ts=25.0)
+            tvGroup.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+            groupLine.addView(tvGroup)
+            recView.addView(groupLine)
+            //Header
+            val headLine = LinearLayout(this)
+            headLine.orientation = LinearLayout.HORIZONTAL
+            headLine.addView(creatTextView(text ="ID", h =hHead, align = View.TEXT_ALIGNMENT_CENTER))
+            headLine.addView(creatTextView(text ="ФИО", h =hHead, w =max_size*23, align = View.TEXT_ALIGNMENT_CENTER))
+            for(i in 0..count_class) {
+                headLine.addView(creatTextView(
+                    text = "Занятие\n"+i.toString(),
+                    h =hHead, w = wHead, align = View.TEXT_ALIGNMENT_CENTER))
+            }
+            //Пустая колонка
+            headLine.addView(creatTextView(text = "+", h =hHead, w = wadd, align =4))
+            for(i in 0..count_work) {
+                headLine.addView(creatTextView(
+                    text = "ЛР\n"+i.toString(),
+                    h =hHead,
+                    w = wHead, align = View.TEXT_ALIGNMENT_CENTER))
+            }
+            //Пустая колонка
+            headLine.addView(creatTextView(text = "+", h =hHead, w = wadd, align =4))
+            recView.addView(headLine)
+
+
+            //Основная информация
+        for (item in studentsFlow.filter { st -> st.id_group == gr.id }) {
+            val mainLine = LinearLayout(this)
+            mainLine.orientation = LinearLayout.HORIZONTAL
+            mainLine.addView(creatTextView(text =item.id.toString(), bg = Color.GRAY, align = View.TEXT_ALIGNMENT_CENTER))
+            mainLine.addView(creatTextView(text =item.toString(), w =max_size*23, bg = Color.RED))
+            //Описание занятий
+            for(i in 0..count_class) {
+                val tv = creatTextView(
+                    text = i.toString(), align = View.TEXT_ALIGNMENT_CENTER,
+                    w = wMain, bg = Color.rgb((0..255).random(),(0..255).random(),(0..255).random()))
+                tv.setOnClickListener {
+                    tv.setBackgroundColor(Color.RED)
+                    true
+                }
+                tv.setOnLongClickListener {
+                    tv.setBackgroundColor(Color.WHITE)
+                    true
+                }
+                mainLine.addView(tv)
+            }
+            mainLine.addView(creatTextView(text = "|", w = wadd, align =4))
+            //Описание заданий
+            for(i in 0..count_work) {
+                val tv = creatTextView(
+                    text = i.toString(), align = View.TEXT_ALIGNMENT_CENTER,
+                    w = wMain, bg = Color.rgb((0..255).random(),(0..255).random(),(0..255).random()))
+                tv.setOnClickListener {
+                    tv.setBackgroundColor(Color.GREEN)
+                    true
+                }
+                tv.setOnLongClickListener {
+                    tv.setBackgroundColor(Color.YELLOW)
+                    true
+                }
+                mainLine.addView(tv)
+            }
+            mainLine.addView(creatTextView(text = "|", w = wadd, align =4))
+            recView.addView(mainLine)
+        }
+        }
     }
 
     private fun fillGridView(){
@@ -253,6 +365,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         var gr: MutableList<Long> = mutableListOf()
         gvMain = findViewById<View>(R.id.gridView1) as GridView
         //gvMain!!.setAdapter(null)
+        gvMain!!.numColumns = 1
         gvMain!!.adapter = null
         when(ssubject) {
             0L -> showToast(message = "Не выбран журнал!")
@@ -293,19 +406,10 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     adapterr = ArrayAdapter<String>(this, R.layout.item, R.id.tvText, arr)
                     gvMain = findViewById<View>(R.id.gridView1) as GridView
                     gvMain!!.setAdapter(adapterr)
-                    adjustGridView()
                 }
             }
         }
     }
-
-    private fun adjustGridView() {
-        gvMain?.setNumColumns(GridView.AUTO_FIT);
-        gvMain?.setNumColumns(1);
-        gvMain?.setVerticalSpacing(10);
-        gvMain?.setHorizontalSpacing(10);
-    }
-
     override fun onStop() {
         super.onStop()
         db.close()
@@ -344,6 +448,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 val btCancl: Button = mDialogView.findViewById(R.id.dialogCancel)//dialogfrom
                 val findbtn: Button = mDialogView.findViewById(R.id.dialogfrom)
                 val xmlbtn: Button = mDialogView.findViewById(R.id.dialogxml)//dialogSave
+
                 //login button click of custom layout
                 var students = mutableListOf<Student>()
 
