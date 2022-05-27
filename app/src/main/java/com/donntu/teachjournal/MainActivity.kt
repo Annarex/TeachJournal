@@ -198,6 +198,50 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner3.adapter = adapter3
 
         //basicAlert
+        var arrayAdapter: ArrayAdapter<*>
+        var addgroup = findViewById<Button>(R.id.dialogaddgroup)
+        addgroup.setOnClickListener {
+            when (ssubject) {
+                0L -> showToast(message = "Не выбрана дисциплина!")
+                else -> {
+                    val builder = AlertDialog.Builder(this)
+                    val mDialogView =
+                        LayoutInflater.from(this).inflate(R.layout.listofgroup, null)
+                    var ll = mDialogView.findViewById<ListView>(R.id.list)
+                    var gr: MutableList<String> = mutableListOf()
+                    var keyy: MutableList<Long> = mutableListOf()
+                    var grr = db.studyGroupDAO().getStudyGroup()
+                    var cc = db.studyGroupDAO().getStudyGroup().count()
+                    for (i in 0..cc - 1) {
+                        gr += grr[i].abbr
+                        //showToast(message = "Номер группы = ${grr[i].id}")
+                    }
+                    arrayAdapter =
+                        ArrayAdapter(this, android.R.layout.simple_list_item_1, gr)
+                    ll.adapter = arrayAdapter
+                    val mBuilder = AlertDialog.Builder(this).setView(mDialogView)
+                    val mAlertDialog = mBuilder.show()
+                    ll.onItemClickListener = object : AdapterView.OnItemClickListener {
+                        override fun onItemClick(
+                            p0: AdapterView<*>?,
+                            p1: View?,
+                            p2: Int,
+                            p3: Long
+                        ) {
+                            //showToast(message = "Выбор - ${p2}, ${p3}")
+                            val pp = p3+1
+                            //var ppp = p2+1
+                            //showToast(message = "Выбор - ${p2}, ${p3}, p3 + 1 = ${pp}, p2+1 = ${ppp}")
+                            db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ssubject, id_group = pp))
+                            fillGridView()
+                            mAlertDialog.dismiss()
+                        }
+                    };
+                }
+            }
+        }
+
+
     }
 
     fun openFileDialog(view: View) {
@@ -227,17 +271,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         /*val recView = findViewById<RecyclerView>(R.id.list)
         recView.layoutManager = LinearLayoutManager(this)
         recView.adapter = StInGrAdapter(all)*/
-        when(ssubject) {
-            0L -> showToast(message = "Не выбрана дисциплина!")
-            else -> {
                 if (path.toString().endsWith("xls")) {
                     //pb.visibility = View.VISIBLE
-                    ParseXML(context = this).readFromExcelFile(db, path!!, ssubject);
+                    ParseXML(context = this).readFromExcelFile(db, path!!);
                     //pb.visibility = View.INVISIBLE
                 }
                 fillGridView ()
-            }
-        }
     }
 
     inline fun <reified T> toArray(list: List<*>): Array<T> {
@@ -268,13 +307,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     //var ffl = db.flowStudentsDAO().getSubjectById(ssubject)
                     //var term = db.flowStudentsDAO().getSubjectById(ssubject).count()
                     arr += "Название"
-                    var o = st[0].id_group
-                    showToast(message = "Выбор! ${count}")
-                    showToast(message = "Выбор! ${num}")
-                    for (j in 0..num - 1) {
-                        if (g[j].id == o) {
-                            arr += g[j].title
-                            showToast(message = "Выбор - ${g[j].id}")
+                    var o = g[0].id//6
+                    showToast(message = "Выбор - ${st[0].id_group}, кол-во ${num} - count ${count}, группа ${g[0].id}")
+                    for (j in 0..count - 1) {
+                        //showToast(message = "Зашел! ${g[0].id} id_group${st[j].id_group}")
+                        if (st[j].id_group == o) {
+                            arr += g[0].title
+                            o = st[j].id_group
+                            showToast(message = "Выбор - ${g[0].id}")
+                            break
                         }
                     }
                     for (i in 0..count - 1) {
@@ -373,8 +414,8 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                 }
                                 showToast(message = "Есть! ${idgroup}, ${ssubject}")
                                 var d = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ssubject, id_group = idgroup))
-                                showToast(message = "Добавили в flow!")
-                                showToast(message = "Есть! ${idgroup}")
+                                //showToast(message = "Добавили в flow!")
+                                //showToast(message = "Есть! ${idgroup}")
                                 val student = Student(
                                     family = surname,
                                     name = name,

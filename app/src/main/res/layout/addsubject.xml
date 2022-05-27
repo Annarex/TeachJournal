@@ -139,7 +139,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:minHeight="70dp"
+        android:minHeight="65dp"
         android:orientation="horizontal">
 
         <Button
@@ -157,7 +157,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:minHeight="30dp"
+        android:minHeight="40dp"
         android:orientation="horizontal">
 
         <Button
