@@ -16,11 +16,12 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.marginBottom
+import androidx.core.view.forEach
 import androidx.core.view.setPadding
 import com.donntu.teachjournal.db.DBJournalHelper
 import com.donntu.teachjournal.db.entity.*
 import com.donntu.teachjournal.utils.ParseXML
+import java.util.*
 
 
 var select: String? =null
@@ -53,36 +54,79 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         menuInflater.inflate(R.menu.main, menu)
         return true
     }
-    //var sp: Spinner? = null
-    //var textView_msg: TextView? = null
+
     var ssubject: Long = 0L
+    companion object {
+        var spinner:Spinner? =null
+        var spinner2:Spinner? =null
+        var spinner3:Spinner? =null
+    }
     val db by lazy { DBJournalHelper.getDatabase(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         //ExporterImporterDB().copyFile(db, this, "TeachJournal.db")
+        registerSpinner()
+        //basicAlert
+        var arrayAdapter: ArrayAdapter<*>
+        var addgroup = findViewById<Button>(R.id.dialogaddgroup)
+        addgroup.setOnClickListener {
+            clearLayout()
+            when (ssubject) {
+                0L -> showToast(message = "Не выбрана дисциплина!")
+                else -> {
+                    val builder = AlertDialog.Builder(this)
+                    val mDialogView =
+                        LayoutInflater.from(this).inflate(R.layout.listofgroup, null)
+                    var ll = mDialogView.findViewById<ListView>(R.id.list)
+                    var gr: MutableList<String> = mutableListOf()
+                    var grr = db.studyGroupDAO().getStudyGroup()
+                    var mapId = mutableMapOf<Int, Long>()
+                    grr.forEachIndexed{index, entity->
+                        gr += grr[index].abbr
+                        mapId[index] = grr[index].id!!.toLong()
+                    }
+                    arrayAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, gr)
+                    ll.adapter = arrayAdapter
+                    val mBuilder = AlertDialog.Builder(this).setView(mDialogView)
+                    val mAlertDialog = mBuilder.show()
+                    ll.onItemClickListener = object : AdapterView.OnItemClickListener {
+                        override fun onItemClick(
+                            p0: AdapterView<*>?,
+                            p1: View?,
+                            p2: Int,
+                            p3: Long
+                        ) {
+                            val pp = mapId[p2]!!
+                            db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ssubject, id_group = pp))
+                            showTable(ssubject)
+                            mAlertDialog.dismiss()
+                        }
+                    };
+                }
+            }
+        }
 
-        val spinner = findViewById<Spinner>(R.id.spinner)
-        spinner.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+
+    }
+
+    fun registerSpinner(){
+        spinner = findViewById<Spinner>(R.id.spinner)
+
+        spinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                // TODO Auto-generated method stub
-                view!!.clearFocus()
+                spinner?.setSelection(0);
                 when(position){
                     1 -> {
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
+                        clearLayout()
                         showdialog(R.layout.addsubject, 1)
                     }
                     2 -> {
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
-                        //view?.let { basicAlert(it) }
-                        //fillGridView()
-
+                        clearLayout()
                         when(ssubject){
                             0L -> showToast(message = "Журнал не выбран!")
                             else -> {
-                                showTable(1)
+                                showTable(ssubject)
                                 var flow = db.flowStudentsDAO().getFlowStudents()
                                 var gh = db.studyClassDAO().getStudyClass()
                             }
@@ -96,21 +140,19 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             }
         })
 
-        val spinner2 = findViewById<Spinner>(R.id.spinner2)
-        spinner2.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+        spinner2 = findViewById<Spinner>(R.id.spinner2)
+        spinner2?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
 
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-
-                view!!.clearFocus()
+                spinner2?.setSelection(0);
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,2)
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
+                        clearLayout()
                     }
                     2 -> {//view?.let { basicAlert(it) }
                         val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
+                        clearLayout()
                         var type = db.subjectDAO().getSubject()
                         var num = db.subjectDAO().getSubject().count()
                         when(num) {
@@ -151,19 +193,18 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             }
         })
 
-        val spinner3 = findViewById<Spinner>(R.id.spinner3)
-        spinner3.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+        spinner3 = findViewById<Spinner>(R.id.spinner3)
+        spinner3?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                view!!.requestFocus()
+                spinner3?.setSelection(0);
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,3)
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
+                        clearLayout()
                     }
                     2 -> {//view?.let { basicAlert(it) }
                         val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.removeAllViews();
+                        clearLayout()
                         var type = db.taskDAO().getTaskType()
                         var num = db.taskDAO().getTaskType().count()
                         var button4_Id: Int = 1111
@@ -189,7 +230,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 // TODO Auto-generated method stub
             }
         })
-
         // Create an ArrayAdapter using a simple spinner layout and languages array
         var adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languages)
         val adapter2 = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
@@ -199,13 +239,17 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         // Set Adapter to Spinner
-        spinner.adapter = adapter
-        spinner2.adapter = adapter2
-        spinner3.adapter = adapter3
-
-        //basicAlert
+        spinner?.adapter = adapter
+        spinner2?.adapter = adapter2
+        spinner3?.adapter = adapter3
     }
-
+    fun clearLayout(){
+        findViewById<LinearLayout>(R.id.layout2).removeAllViews()
+        findViewById<LinearLayout>(R.id.layout3).removeAllViews()
+        findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
+            view.visibility = View.INVISIBLE
+        }
+    }
     fun openFileDialog(view: View) {
         if (ActivityCompat.checkSelfPermission(this,  Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this,  Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
@@ -225,25 +269,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         if (requestCode == 777 && data != null) {
             val filePath = data?.data
             path = filePath
+            showdialog(R.layout.addsubject, 1)
         }
     }
     fun ReadXml(view: View){
-        //val path = "/document/primary:Documents/2_5323700053171246751.xls"
         val all = db.studyGroupDAO().getAllGroupsWithStudents()
-        /*val recView = findViewById<RecyclerView>(R.id.list)
-        recView.layoutManager = LinearLayoutManager(this)
-        recView.adapter = StInGrAdapter(all)*/
-        when(ssubject) {
-            0L -> showToast(message = "Не выбрана дисциплина!")
-            else -> {
-                if (path.toString().endsWith("xls")) {
-                    //pb.visibility = View.VISIBLE
-                    ParseXML(context = this).readFromExcelFile(db, path!!, ssubject);
-                    //pb.visibility = View.INVISIBLE
-                }
-                showTable(ssubject)
+            if (path.toString().endsWith("xls")) {
+                ParseXML(context = this).readFromExcelFile(db, path!!);
             }
-        }
+        showTable(ssubject)
     }
 
     inline fun <reified T> toArray(list: List<*>): Array<T> {
@@ -275,11 +309,10 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         var wMain = 300
         var hMain = 100
         var wadd = 60
-        var items = db.studentDAO().getStudent()
         var studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
-        var studentsFlow = db.studentDAO().getStudentGroup(idJournal)
+        var studentsFlow = db.studentDAO().getStudentGroupByJournal(idJournal)
 
-        val max_size: Int = (items.maxByOrNull{it.toString().length}).toString().length
+        val max_size: Int = (studentsFlow.maxByOrNull{it.toString().length}).toString().length
         val recView = findViewById<LinearLayout>(R.id.layout3)
 
         for(gr in studyGroupsFlow){
@@ -358,14 +391,13 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
 
     private fun fillGridView(){
         //var st = db.studentDAO().getStudentGroup()
-        var count = db.studentDAO().getStudentGroup(ssubject).count()
+        var count = db.studentDAO().getStudentGroupByJournal(ssubject).count()
         //var g = db.studyGroupDAO().getStudyGroupinSub(ssubject)
         //var num = db.studyGroupDAO().getStudyGroupinSub(ssubject).count()
         var arr: MutableList<String> = mutableListOf()
         var gr: MutableList<Long> = mutableListOf()
         gvMain = findViewById<View>(R.id.gridView1) as GridView
         //gvMain!!.setAdapter(null)
-        gvMain!!.numColumns = 1
         gvMain!!.adapter = null
         when(ssubject) {
             0L -> showToast(message = "Не выбран журнал!")
@@ -373,7 +405,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 if (count == 0) {
                     showToast(message = "Нет студентов!")
                 } else {
-                    var st = db.studentDAO().getStudentGroup(ssubject)
+                    var st = db.studentDAO().getStudentGroupByJournal(ssubject)
                     //var count = db.studentDAO().getStudentGroup().count()
                     var g = db.studyGroupDAO().getStudyGroupinSub(ssubject)
                     var num = db.studyGroupDAO().getStudyGroupinSub(ssubject).count()
@@ -381,13 +413,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     //var ffl = db.flowStudentsDAO().getSubjectById(ssubject)
                     //var term = db.flowStudentsDAO().getSubjectById(ssubject).count()
                     arr += "Название"
-                    var o = st[0].id_group
-                    showToast(message = "Выбор! ${count}")
-                    showToast(message = "Выбор! ${num}")
-                    for (j in 0..num - 1) {
-                        if (g[j].id == o) {
-                            arr += g[j].title
-                            showToast(message = "Выбор - ${g[j].id}")
+                    var o = g[0].id//6
+                    showToast(message = "Выбор - ${st[0].id_group}, кол-во ${num} - count ${count}, группа ${g[0].id}")
+                    for (j in 0..count - 1) {
+                        //showToast(message = "Зашел! ${g[0].id} id_group${st[j].id_group}")
+                        if (st[j].id_group == o) {
+                            arr += g[0].title
+                            o = st[j].id_group
+                            showToast(message = "Выбор - ${g[0].id}")
+                            break
                         }
                     }
                     for (i in 0..count - 1) {
