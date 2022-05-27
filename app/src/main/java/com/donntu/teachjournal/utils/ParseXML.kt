@@ -22,7 +22,7 @@ class ParseXML {
     constructor(context: Context){
         this.context = context
     }
-    fun readFromExcelFile(db: DBJournalHelper, uri: Uri, ii: Long) {
+    fun readFromExcelFile(db: DBJournalHelper, uri: Uri) {
         try {
             val inputStream = context?.getContentResolver()?.openInputStream(uri)
             val xlWb = WorkbookFactory.create(inputStream)
@@ -40,7 +40,7 @@ class ParseXML {
                     0L -> db.studyGroupDAO().insertStudyGroup(stgroup)
                     else -> idExist
                 }
-                db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ii, id_group = idgroup))
+                //db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ii, id_group = idgroup))
                 if (idExist == 0L) cn_new_records++
 
                 index += 2
