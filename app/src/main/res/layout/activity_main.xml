@@ -63,9 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:minHeight="45dp"
         android:orientation="horizontal">
-
         <Button
             android:id="@+id/dialogaddgroup"
             style="@style/Base.Widget.AppCompat.Button.Colored"
@@ -74,10 +72,10 @@
             android:layout_marginLeft="35dp"
             android:layout_marginRight="35dp"
             android:text="Добавить группу"
-            app:icon="@android:drawable/ic_menu_add"
-            tools:visibility="invisible" />
-
+            android:visibility="invisible"
+            app:icon="@android:drawable/ic_menu_add" />
     </LinearLayout>
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
@@ -112,5 +110,7 @@
             tools:ignore="MissingConstraints"></GridView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
 </LinearLayout>

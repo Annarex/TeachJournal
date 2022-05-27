@@ -8,10 +8,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +17,7 @@ import androidx.core.view.forEach
 import androidx.core.view.setPadding
 import com.donntu.teachjournal.db.DBJournalHelper
 import com.donntu.teachjournal.db.entity.*
+import com.donntu.teachjournal.db.utils.ExporterImporterDB
 import com.donntu.teachjournal.utils.ParseXML
 import java.util.*
 
@@ -50,11 +48,21 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             "Может быть", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.main, menu)
         return true
     }
-
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Handle item selection
+        return when (item.itemId) {
+            R.id.itemExportDB -> {
+                ExporterImporterDB().copyFile(db, this, "TeachJournal.db")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
     var ssubject: Long = 0L
     companion object {
         var spinner:Spinner? =null
@@ -65,13 +73,11 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //ExporterImporterDB().copyFile(db, this, "TeachJournal.db")
         registerSpinner()
         //basicAlert
         var arrayAdapter: ArrayAdapter<*>
         var addgroup = findViewById<Button>(R.id.dialogaddgroup)
         addgroup.setOnClickListener {
-            clearLayout()
             when (ssubject) {
                 0L -> showToast(message = "Не выбрана дисциплина!")
                 else -> {
@@ -99,10 +105,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                         ) {
                             val pp = mapId[p2]!!
                             db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = ssubject, id_group = pp))
+                            findViewById<LinearLayout>(R.id.layout3).removeAllViews()
                             showTable(ssubject)
                             mAlertDialog.dismiss()
                         }
                     };
+                    spinner2?.performItemClick(spinner2,2,2)
                 }
             }
         }
@@ -149,10 +157,13 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     1 -> {
                         showdialog(R.layout.addtype,2)
                         clearLayout()
+                        findViewById<Button>(R.id.dialogaddgroup).visibility = View.VISIBLE
                     }
                     2 -> {//view?.let { basicAlert(it) }
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
                         clearLayout()
+                        findViewById<Button>(R.id.dialogaddgroup).visibility = View.VISIBLE
+                        val ll = findViewById<LinearLayout>(R.id.layout2)
+                        ll.visibility = View.VISIBLE
                         var type = db.subjectDAO().getSubject()
                         var num = db.subjectDAO().getSubject().count()
                         when(num) {
@@ -196,15 +207,16 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner3 = findViewById<Spinner>(R.id.spinner3)
         spinner3?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                spinner3?.setSelection(0);
+                spinner3?.setSelection(0)
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,3)
                         clearLayout()
                     }
                     2 -> {//view?.let { basicAlert(it) }
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
                         clearLayout()
+                        val ll = findViewById<LinearLayout>(R.id.layout2)
+                        ll.visibility = View.VISIBLE
                         var type = db.taskDAO().getTaskType()
                         var num = db.taskDAO().getTaskType().count()
                         var button4_Id: Int = 1111
@@ -244,8 +256,14 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner3?.adapter = adapter3
     }
     fun clearLayout(){
-        findViewById<LinearLayout>(R.id.layout2).removeAllViews()
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.removeAllViews()
         findViewById<LinearLayout>(R.id.layout3).removeAllViews()
+        setInvisibleView()
+    }
+    fun setInvisibleView(){
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.visibility = View.INVISIBLE
         findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
             view.visibility = View.INVISIBLE
         }

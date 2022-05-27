@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Item">
     <item
-        android:id="@+id/item1"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:id="@+id/itemExportDB"
+        android:icon="@android:drawable/ic_menu_upload"
         android:title="Настройки"
-        app:showAsAction="always"></item>
+        app:showAsAction="ifRoom" />
+    <item android:title="Item" />
+
 </menu>
