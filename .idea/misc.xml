@@ -21,10 +21,11 @@
         <entry key="..\:/Android/TeachJournal/app/src/main/res/menu/main.xml" value="0.25416666666666665" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/drawable/rec.xml" value="0.15" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/drawable/rect.xml" value="0.123" />
-        <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/activity_main.xml" value="0.22826086956521738" />
+        <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/addsubject.xml" value="0.264" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/addtype.xml" value="0.264" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/item.xml" value="0.22826086956521738" />
+        <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/listofgroup.xml" value="0.22826086956521738" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/recycler_item.xml" value="0.22826086956521738" />
       </map>
     </option>

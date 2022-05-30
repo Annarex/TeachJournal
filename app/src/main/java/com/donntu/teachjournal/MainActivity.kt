@@ -288,6 +288,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner?.adapter = adapter
         spinner2?.adapter = adapter2
         spinner3?.adapter = adapter3
+
     }
     fun clearLayout(){
         var lay2 = findViewById<LinearLayout>(R.id.layout2)
@@ -326,6 +327,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         if (path.toString().endsWith("xls")) {
             ParseXML(context = this).readFromExcelFile(db, path!!);
         }
+
     }
 
     inline fun <reified T> toArray(list: List<*>): Array<T> {
@@ -360,7 +362,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         var wadd = 60
         var studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
         var studentsFlow = db.studentDAO().getStudentGroupByJournal(idJournal)
-
         val max_size: Int = (studentsFlow.maxByOrNull{it.toString().length}).toString().length
 
         val recView = LinearLayout(this@MainActivity)
@@ -515,6 +516,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                         idExist
                                     }
                                 }
+
                                 showToast(message = "Есть! ${idgroup}, ${id_journal}")
                                 var d = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = id_journal, id_group = idgroup))
                                 showToast(message = "Добавили в flow!")
