@@ -20,7 +20,8 @@
             android:clickable="false"
             android:minHeight="35dp"
             android:padding="15dp"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <Spinner
             android:id="@+id/spinner2"
@@ -29,7 +30,8 @@
             android:layout_weight="1"
             android:minHeight="35dp"
             android:padding="15dp"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:ignore="SpeakableTextPresentCheck" />
 
         <Spinner
             android:id="@+id/spinner3"
@@ -38,7 +40,8 @@
             android:layout_weight="1"
             android:minHeight="35dp"
             android:padding="15dp"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            tools:ignore="SpeakableTextPresentCheck" />
     </LinearLayout>
 
     <HorizontalScrollView
@@ -55,42 +58,29 @@
 
     </HorizontalScrollView>
 
+  <LinearLayout
+        android:id="@+id/layout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+    </LinearLayout>
+
     <LinearLayout
+        android:id="@+id/linearLayoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:minHeight="45dp"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
         <Button
             android:id="@+id/dialogaddgroup"
             style="@style/Base.Widget.AppCompat.Button.Colored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="35dp"
-            android:layout_marginRight="35dp"
-            android:text="Добавить группу"
+            android:text="@string/strAddGroup"
+            android:visibility="invisible"
             app:icon="@android:drawable/ic_menu_add" />
 
     </LinearLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <GridView
-            android:id="@+id/gridView1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#EFEFF8"
-            android:columnWidth="100dp"
-            android:gravity="center"
-            android:horizontalSpacing="5dp"
-            android:numColumns="auto_fit"
-            android:stretchMode="columnWidth"
-            android:verticalSpacing="35dp"
-            tools:ignore="MissingConstraints"></GridView>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

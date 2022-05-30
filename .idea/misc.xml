@@ -3,11 +3,22 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/activity_main.xml" value="0.176" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.259" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/drawable/rec.xml" value="0.259" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/drawable/rect.xml" value="0.259" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/addsubject.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/addtype.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/create_journal.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/gridview_item.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/gridview_textview.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/item.xml" value="0.25416666666666665" />
         <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/list_item.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/listofgroup.xml" value="0.25416666666666665" />
         <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/recycler_item.xml" value="0.25416666666666665" />
         <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/recyclerview_item.xml" value="0.25416666666666665" />
-        <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/drawable/ic_launcher_background.xml" value="0.15" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/layout/сreate_journal.xml" value="0.25416666666666665" />
+        <entry key="..\:/Android/TeachJournal/app/src/main/res/menu/main.xml" value="0.25416666666666665" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/drawable/rec.xml" value="0.15" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/drawable/rect.xml" value="0.123" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/activity_main.xml" value="0.1" />
@@ -16,7 +27,6 @@
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/item.xml" value="0.22826086956521738" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/listofgroup.xml" value="0.22826086956521738" />
         <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/layout/recycler_item.xml" value="0.22826086956521738" />
-        <entry key="..\:/AndroidStudioProjects/TeachJournal/app/src/main/res/menu/main.xml" value="0.253125" />
       </map>
     </option>
   </component>

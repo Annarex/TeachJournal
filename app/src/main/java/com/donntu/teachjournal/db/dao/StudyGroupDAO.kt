@@ -17,7 +17,8 @@ interface StudyGroupDAO {
     @Query("SELECT * FROM StudyGroup")
     fun getStudyGroup(): List<StudyGroup>
 
-    @Query("SELECT * FROM StudyGroup as st, FlowStudents as fl WHERE st.id=fl.id_group AND fl.id_journal = :x ORDER BY st.id")
+    @Query("SELECT id_group as id, abbr, title FROM StudyGroup as st, FlowStudents as fl WHERE st.id=fl.id_group AND fl.id_journal = :x ORDER BY st.id")
+
     fun getStudyGroupinSub(x: Long): List<StudyGroup>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
