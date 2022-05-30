@@ -78,6 +78,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
     val db by lazy { DBJournalHelper.getDatabase(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
         registerSpinner()
         var arrayAdapter: ArrayAdapter<*>
         var addgroup = findViewById<Button>(R.id.dialogaddgroup)
@@ -568,7 +569,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     if(word.trim().isNotEmpty() && fullword.trim().isNotEmpty()) {
                         var sub = Subject(title = fullword, abbr = word)
                         val idExist = db.subjectDAO().isSubjectExist(fullword, word)
-                        showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
+                        when(idExist){
+                            0L -> {
+                                if(db.subjectDAO().insertSubject(sub)!=0L)
+                                    showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
+                            }
+                            else -> {
+                                showToast(message="Такая дисциплина существует")
+                            }
+                        }
                     }
                     else showToast(message = "Заполните все поля!")
                     spinner2?.setSelection(3)
