@@ -8,8 +8,13 @@ import io.reactivex.Maybe
 @Dao
 interface JournalDAO {
     @Query("SELECT * FROM Journal")
-    fun getJournal(): List<Journal>
+    fun getJournals(): List<Journal>
 
+    @Query("SELECT * FROM Journal where id = :id")
+    fun getJournal(id: Long): Journal
+
+    @Query("SELECT * FROM Journal where id_subject = :id")
+    fun getJournalBySubjectId(id:Long): List<Journal>
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertJournal(amp: Journal):Long
 
