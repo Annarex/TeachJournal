@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TeachJournal</string>
+    <string name="strAddGroup">Добавить группу</string>
 </resources>
