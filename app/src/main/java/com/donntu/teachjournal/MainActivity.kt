@@ -1,7 +1,6 @@
 package com.donntu.teachjournal
 
 import android.Manifest
-import android.R.attr
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -28,8 +27,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
 {
     //удалил комментарий
     var path: Uri? = null
-    var gvMain: GridView? = null
-    var adapterr: ArrayAdapter<String>? = null
     var languages = arrayOf("Группа","Добавить", "Показать все")
     var list_of_items = arrayOf("Дисциплина", "Добавить дисциплину", "Создать журнал", "Показать все")
     var list_of_items2 = arrayOf("Вид занятия", "Добавить", "Показать все")
@@ -42,10 +39,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
     val negativeButtonClick = { dialog: DialogInterface, which: Int ->
         Toast.makeText(applicationContext,
             "Нет", Toast.LENGTH_SHORT).show()
-    }
-    val neutralButtonClick = { dialog: DialogInterface, which: Int ->
-        Toast.makeText(applicationContext,
-            "Может быть", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
