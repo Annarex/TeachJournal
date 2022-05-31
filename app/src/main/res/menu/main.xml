@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Item">
+    <item
+        android:id="@+id/itemExportDB"
+        android:icon="@android:drawable/stat_sys_upload"
+        android:title="Настройки"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/itemImportDB"
+        android:icon="@android:drawable/stat_sys_download"
+        android:title="Настройки"
+        app:showAsAction="ifRoom" />
+</menu>

@@ -6,7 +6,7 @@ import android.database.Cursor
 import android.provider.CalendarContract
 import com.donntu.teachjournal.db.entity.StudyClassType
 import com.donntu.teachjournal.db.entity.StudyGroup
-import com.donntu.teachjournal.db.entity.StudySubject
+import com.donntu.teachjournal.db.entity.Subject
 import java.util.*
 
 

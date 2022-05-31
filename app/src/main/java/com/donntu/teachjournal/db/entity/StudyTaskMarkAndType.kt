@@ -1,9 +1,6 @@
 package com.donntu.teachjournal.db.entity
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import java.io.Serializable
 
 @Entity(tableName = "StudyTaskMark", foreignKeys = arrayOf(
@@ -18,13 +15,21 @@ import java.io.Serializable
     ForeignKey(entity = TaskMarkType::class,
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("id_task_mark_type"),
-        onDelete = ForeignKey.CASCADE))
+        onDelete = ForeignKey.CASCADE)),
+    indices = [Index(value = ["id_task"]),Index(value = ["id_student"]),Index(value = ["id_task_mark_type"])]
 )
 class StudyTaskMark (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val id_task:Int,
-    val id_student: Int,
-    val id_task_mark_type: Int,
+    val id: Long? = null,
+    val id_task:Long,
+    val id_student: Long,
+    val id_task_mark_type: Long,
     val mark: String
+): Serializable
+
+@Entity(tableName = "TaskMarkType")
+class TaskMarkType (
+    @PrimaryKey(autoGenerate = true)
+    val id: Long? = null,
+    val title: String
 ): Serializable

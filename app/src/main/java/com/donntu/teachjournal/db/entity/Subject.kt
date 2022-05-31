@@ -8,7 +8,7 @@ import java.io.Serializable
 @Entity(tableName = "Subject")
 class Subject  (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Long? = null,
     var title: String,
     var abbr: String
 ): Serializable

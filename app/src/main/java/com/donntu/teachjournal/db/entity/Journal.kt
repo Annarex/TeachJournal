@@ -1,20 +1,18 @@
 package com.donntu.teachjournal.db.entity
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.*
 import java.io.Serializable
 
 @Entity(tableName = "Journal", foreignKeys = arrayOf(
     ForeignKey(entity = Subject::class,
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("id_subject"),
-        onDelete = ForeignKey.CASCADE))
+        onDelete = ForeignKey.CASCADE)),
+    indices = [Index(value = ["id_subject"])]
 )
 class Journal (
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
-    val id_subject: Int,
+    val id: Long? = null,
+    val id_subject: Long,
     val note: String
 ): Serializable
