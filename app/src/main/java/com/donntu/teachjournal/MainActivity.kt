@@ -23,7 +23,10 @@ import com.donntu.teachjournal.db.entity_with_relate.StudyTaskMarkWithInfo
 import com.donntu.teachjournal.db.entity_with_relate.StudyTaskWithInfo
 import com.donntu.teachjournal.db.utils.ExporterImporterDB
 import com.donntu.teachjournal.utils.ParseXML
-import java.text.SimpleDateFormat
+import java.util.*
+import android.widget.CalendarView
+import java.text.DateFormat
+import java.time.LocalDate
 
 
 var select: String? =null
@@ -652,7 +655,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                 idExist
                             }
                         }
-                        showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
                     }
                     else showToast(message = "Заполните все поля!")
                     spinner3?.setSelection(2)
@@ -787,6 +789,43 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             return false
         } else {
             return true
+        }
+    }
+    
+    fun addtask(){
+        setContentView(R.layout.addtask)
+        var types = arrayOf("лр", "пр", "кр", "кп","из","ср")
+
+        val title: TextView = findViewById(R.id.tasktitle)
+        val type: Spinner = findViewById(R.id.spinnertasktype)
+        var gr: MutableList<String> = mutableListOf()
+        var grr = db.studyClassDAO().getStudyClass()
+        var mapId = mutableMapOf<Int, Long>()
+        grr.forEachIndexed{index, entity->
+            gr += grr[index].abbr
+            mapId[index] = grr[index].id!!.toLong()
+        }
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, gr)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        sp.adapter = adapter
+        //val date = Date()
+        val calendar = Calendar.getInstance()
+        var calendarView: CalendarView = findViewById(R.id.calendarView)
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            calendar.set(year,month,dayOfMonth)
+            calendarView.date = calendar.timeInMillis
+            val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM)
+            val da=dateFormatter.format(calendar.time)
+        }
+       val date= calendar.time
+        val btCancl: Button = findViewById(R.id.declineb)
+        val btDone: Button = findViewById(R.id.saveb)
+        btDone.setOnClickListener {
+            val theme = title.text.toString()
+        var d = db.studyClassDAO().insertStudyClass(StudyClass(data = date,theme=theme, ))
+        }
+        btCancl.setOnClickListener {
+
         }
     }
 

@@ -2,7 +2,7 @@ package com.donntu.teachjournal.db.entity
 
 import androidx.room.*
 import java.io.Serializable
-import java.sql.Date
+import java.util.Date
 
 @Entity(tableName = "StudyClass", foreignKeys = arrayOf(
     ForeignKey(entity = StudyClassType::class,
