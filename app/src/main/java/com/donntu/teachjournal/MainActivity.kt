@@ -23,7 +23,10 @@ import com.donntu.teachjournal.db.entity_with_relate.StudyTaskMarkWithInfo
 import com.donntu.teachjournal.db.entity_with_relate.StudyTaskWithInfo
 import com.donntu.teachjournal.db.utils.ExporterImporterDB
 import com.donntu.teachjournal.utils.ParseXML
+import java.sql.Date
+import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.util.*
 
 
 var select: String? =null
@@ -82,7 +85,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         var addgroup = findViewById<Button>(R.id.dialogaddgroup)
         addgroup.setOnClickListener {
             when (id_journal) {
-                0L -> showToast(message = "Не выбрана дисциплина!")
+                0L -> showToast(message = "Не выбран журнал!")
                 else -> {
                     val builder = AlertDialog.Builder(this)
                     val mDialogView = LayoutInflater.from(this).inflate(R.layout.listofgroup, null)
@@ -312,6 +315,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         return  view
     }
     val GOLD: Int = Color.rgb(255, 215, 0)
+
     fun showTable(idJournal: Long) {
         var wHead = 300
         var hHead = 220
@@ -396,8 +400,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 text = ""+type+"\n"+detail.data+"\n"+(detail.theme?:"Темы нет"),
                 bg=bg, h = h, w = w, align = View.TEXT_ALIGNMENT_CENTER))
         }
-        //Пустая колонка
-        headLine.addView(creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4))
+        //Колонка добавления занятия
+        val addSC = creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4)!!
+        addSC.setOnClickListener{view->
+            addStudyClass(id_journ = id_journal)
+        }
+        headLine.addView(addSC)
         tasks.forEachIndexed{ i, task ->
             val type = task.type.abbr
             val num_task = task.task.id_cur_num_task
@@ -406,8 +414,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 h = h,
                 w = w, align = View.TEXT_ALIGNMENT_CENTER))
         }
-        //Пустая колонка
-        headLine.addView(creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4))
+        //Колонка добавления задания
+        val addST = creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4)!!
+        addST.setOnClickListener{view->
+            addStudyClass(id_journ = id_journal)
+        }
+        headLine.addView(addST)
         line.addView(headLine)
     }
 
@@ -707,6 +719,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 }
             }
         }
+
     }
 
     fun clearLayout(){
@@ -787,6 +800,52 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             return false
         } else {
             return true
+        }
+    }
+    
+    fun addStudyClass(id_journ: Long){
+        when (id_journ) {
+            0L -> showToast(message = "Не выбран журнал!")
+            else -> {
+                val dialog = LayoutInflater.from(this).inflate(R.layout.addstudyclass, null)
+                val title: TextView = dialog.findViewById(R.id.etTaskTitle)
+                val sp: Spinner = dialog.findViewById(R.id.spinnertasktype)
+                var gr: MutableList<String> = mutableListOf()
+                var grr = db.studyClassDAO().getStudyClassType()
+                var typesID = mutableMapOf<Int, Long>()
+                grr.forEachIndexed{index, entity->
+                    gr += grr[index].abbr
+                    typesID[index] = grr[index].id!!.toLong()
+                }
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, gr)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                sp.adapter = adapter
+                val calendar = Calendar.getInstance()
+                var calendarView: CalendarView = dialog.findViewById(R.id.calendarView)
+                calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+                    calendar.set(year,month,dayOfMonth)
+                    calendarView.date = calendar.timeInMillis
+                    val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM)
+                    val da=dateFormatter.format(calendar.time)
+                }
+                val btCancl: Button = dialog.findViewById(R.id.declineb)
+                val btDone: Button = dialog.findViewById(R.id.saveb)
+                val mBuilder = AlertDialog.Builder(this).setView(dialog)
+                val mAlertDialog = mBuilder.show()
+                btDone.setOnClickListener {
+                    mAlertDialog.dismiss()
+                    val theme = title.text.toString()
+                    val id_study_class_type = typesID[spinner?.selectedItemPosition]!!
+                    var d = db.studyClassDAO().insertStudyClass(StudyClass(data = Date(calendar.time.time),theme=theme, id_study_class_type = id_study_class_type, id_journal = id_journ))
+                    spinner?.setSelection(2)
+                }
+                btCancl.setOnClickListener {
+                    mAlertDialog.dismiss()
+                }
+
+
+
+            }
         }
     }
 
