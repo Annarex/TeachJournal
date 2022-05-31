@@ -423,7 +423,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         classes.forEachIndexed{ i, cl ->
             val sam = studyAttendMark.filter { st->st.attendMark.id_study_class!! == cl.cl.id!!}
             var text: String = when(sam.count()){
-                0 -> ""
+                0 -> "Н"
                 else -> sam[0].attendMark.mark
             }
 
@@ -431,11 +431,26 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 text = text, align = View.TEXT_ALIGNMENT_CENTER,
                 w = w, bg = bg)
             tv.setOnClickListener {
-                tv.setBackgroundColor(Color.RED)
+                //tv.setBackgroundColor(Color.RED)
                 true
             }
             tv.setOnLongClickListener {
-                tv.setBackgroundColor(Color.WHITE)
+                val menu = PopupMenu(this@MainActivity, tv)
+                menu.menu.apply {
+                    add("Rename").setOnMenuItemClickListener {
+                        true
+                    }
+                    add("change context").setOnMenuItemClickListener {
+
+                        true
+                    }
+
+                    add("delete").setOnMenuItemClickListener {
+
+                        true
+                    }
+                }
+                menu.show()
                 true
             }
             mainLine.addView(tv)
@@ -455,17 +470,32 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         tasks.forEachIndexed{ i, task ->
             val stm = studyTaskMark.filter { st->st.taskMark.id_task!! == task.task.id!!}
             var text: String = when(stm.count()){
-                0 -> "Н"
+                0 -> ""
                 else -> stm[0].taskMark.mark
             }
 
             val tv = creatTextView(text = text, align = View.TEXT_ALIGNMENT_CENTER, w = w, bg = bg)
             tv.setOnClickListener {
-                tv.setBackgroundColor(Color.GREEN)
+                //tv.setBackgroundColor(Color.GREEN)
                 true
             }
             tv.setOnLongClickListener {
-                tv.setBackgroundColor(Color.YELLOW)
+                val menu = PopupMenu(this@MainActivity, tv)
+                menu.menu.apply {
+                    add("Rename2").setOnMenuItemClickListener {
+                        true
+                    }
+                    add("change2").setOnMenuItemClickListener {
+
+                        true
+                    }
+
+                    add("delete2").setOnMenuItemClickListener {
+
+                        true
+                    }
+                }
+                menu.show()
                 true
             }
             mainLine.addView(tv)
@@ -485,7 +515,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         groupLine.addView(tvGroup)
         line.addView(groupLine)
     }
-
 
     fun showdialog(x: Int, y: Int){
         val mDialogView = LayoutInflater.from(this).inflate(x, null)
@@ -562,7 +591,6 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 findbtn.setOnClickListener {
                     if (hasPermissionsWithStorage()){
                         val intent = Intent().setAction(Intent.ACTION_GET_CONTENT).setType("*/*")
-                        //val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Android"))
                         startActivityForResult(Intent.createChooser(intent, "Select a file"), 777)
                     }
                     mAlertDialog.dismiss()
