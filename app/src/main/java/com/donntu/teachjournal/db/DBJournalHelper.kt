@@ -58,11 +58,11 @@ abstract class DBJournalHelper: RoomDatabase() {
             dao1?.insertAttendMarkType(AttendMarkType(title = "Пропуск"))
 
             var dao2 = INSTANCE?.studyClassDAO()
-            dao2?.insertStudyClassType(StudyClassType(title = "Лекция",abbr="лек"))
-            dao2?.insertStudyClassType(StudyClassType(title = "Практика",abbr="пр"))
-            dao2?.insertStudyClassType(StudyClassType(title = "Лабораторная",abbr="лаб"))
-            dao2?.insertStudyClassType(StudyClassType(title = "Семинар",abbr="сем"))
-            dao2?.insertStudyClassType(StudyClassType(title = "Конференция",abbr="конф"))
+            dao2?.insertStudyClassType(StudyClassType(title = "Лекция",abbr="ЛЕК"))
+            dao2?.insertStudyClassType(StudyClassType(title = "Практика",abbr="ПР"))
+            dao2?.insertStudyClassType(StudyClassType(title = "Лабораторная",abbr="ЛАБ"))
+            dao2?.insertStudyClassType(StudyClassType(title = "Семинар",abbr="СЕМ"))
+            dao2?.insertStudyClassType(StudyClassType(title = "Конференция",abbr="КОНФ"))
 
             val dao3 = INSTANCE?.studyTaskMarkDAO()
             dao3?.insertTaskMarkType(TaskMarkType(title = "Знак"))
