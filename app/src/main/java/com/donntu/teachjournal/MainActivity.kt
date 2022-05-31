@@ -17,8 +17,13 @@ import androidx.core.view.forEach
 import androidx.core.view.setPadding
 import com.donntu.teachjournal.db.DBJournalHelper
 import com.donntu.teachjournal.db.entity.*
+import com.donntu.teachjournal.db.entity_with_relate.StudyAttendMarkWithInfo
+import com.donntu.teachjournal.db.entity_with_relate.StudyClassWithInfo
+import com.donntu.teachjournal.db.entity_with_relate.StudyTaskMarkWithInfo
+import com.donntu.teachjournal.db.entity_with_relate.StudyTaskWithInfo
 import com.donntu.teachjournal.db.utils.ExporterImporterDB
 import com.donntu.teachjournal.utils.ParseXML
+import java.text.SimpleDateFormat
 
 
 var select: String? =null
@@ -283,56 +288,15 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         spinner3?.adapter = adapter3
 
     }
-    fun clearLayout(){
-        var lay2 = findViewById<LinearLayout>(R.id.layout2)
-        lay2.removeAllViews()
-        findViewById<LinearLayout>(R.id.layout3).removeAllViews()
-        setInvisibleView()
-    }
-    fun setInvisibleView(){
-        var lay2 = findViewById<LinearLayout>(R.id.layout2)
-        lay2.visibility = View.INVISIBLE
-        findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
-            view.visibility = View.INVISIBLE
-        }
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode === RESULT_OK && data != null) {
-            val filePath = data?.data
-            path = filePath
-            when (requestCode) {
-                //Чтение xls
-                777 -> {
-                    if(path.toString().endsWith("xls"))
-                        showdialog(R.layout.addsubject, 1)
-                }
-                //путь для экспорта
-                666 -> {
-                    ExporterImporterDB().exportDB(db, this, uri = path!!, db_name = "TeachJournal.db")
-                }
-            }
-        }
-    }
-
-    fun ReadXml(view: View){
-        if (path.toString().endsWith("xls")) {
-            ParseXML(context = this).readFromExcelFile(db, path!!);
-        }
-
-    }
-
-    inline fun <reified T> toArray(list: List<*>): Array<T> {
-        return (list as List<T>).toTypedArray()
-    }
     fun creatTextView(
         text: String,
         w: Int = 100, h: Int = 100,
-        bg: Int = Color.rgb(250, 218, 221),
+        bg: Int = 0,
         visible: Int = View.VISIBLE,
         align: Int = View.TEXT_ALIGNMENT_INHERIT,
         ts: Double = 14.0,
+        lp: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
     ): TextView{
         var view = TextView(this)  as TextView
         view.text = text
@@ -343,93 +307,55 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         view.textSize = ts.toFloat()
         view.visibility = visible
         view.textAlignment = align
+        lp.setMargins(1,1,1,1)
+        view.layoutParams = lp
         return  view
     }
+    val GOLD: Int = Color.rgb(255, 215, 0)
     fun showTable(idJournal: Long) {
-        var count_class = 4
-        var count_work = 5
         var wHead = 300
-        var hHead = 150
+        var hHead = 220
         var wMain = 300
         var hMain = 100
         var wadd = 60
         var studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
         var studentsFlow = db.studentDAO().getStudentGroupByJournal(idJournal)
-        val max_size: Int = (studentsFlow.maxByOrNull{it.toString().length}).toString().length
+        val max_size: Int = (studentsFlow.maxByOrNull{it.toString().length}).toString().length*24
 
         val recView = LinearLayout(this@MainActivity)
         recView.orientation = LinearLayout.VERTICAL
         recView.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        recView.setBackgroundColor(Color.LTGRAY)
 
         for(gr in studyGroupsFlow){
-            val groupLine = LinearLayout(this)
-            groupLine.orientation = LinearLayout.HORIZONTAL
-            val tvGroup = creatTextView(text =""+gr.abbr, bg =Color.LTGRAY,h=hHead, ts=25.0)
-            tvGroup.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
-            groupLine.addView(tvGroup)
-            recView.addView(groupLine)
-            //Header
-            val headLine = LinearLayout(this)
-            headLine.orientation = LinearLayout.HORIZONTAL
-            headLine.addView(creatTextView(text ="ID", h =hHead, align = View.TEXT_ALIGNMENT_CENTER))
-            headLine.addView(creatTextView(text ="ФИО", h =hHead, w =max_size*23, align = View.TEXT_ALIGNMENT_CENTER))
-            for(i in 0..count_class) {
-                headLine.addView(creatTextView(
-                    text = "Занятие\n"+i.toString(),
-                    h =hHead, w = wHead, align = View.TEXT_ALIGNMENT_CENTER))
-            }
-            //Пустая колонка
-            headLine.addView(creatTextView(text = "+", h =hHead, w = wadd, align =4))
-            for(i in 0..count_work) {
-                headLine.addView(creatTextView(
-                    text = "ЛР\n"+i.toString(),
-                    h =hHead,
-                    w = wHead, align = View.TEXT_ALIGNMENT_CENTER))
-            }
-            //Пустая колонка
-            headLine.addView(creatTextView(text = "+", h =hHead, w = wadd, align =4))
-            recView.addView(headLine)
-
-
-            //Основная информация
-        for (item in studentsFlow.filter { st -> st.id_group == gr.id }) {
-            val mainLine = LinearLayout(this)
-            mainLine.orientation = LinearLayout.HORIZONTAL
-            mainLine.addView(creatTextView(text =item.id.toString(), bg = Color.GRAY, align = View.TEXT_ALIGNMENT_CENTER))
-            mainLine.addView(creatTextView(text =item.toString(), w =max_size*23, bg = Color.RED))
-            //Описание занятий
-            for(i in 0..count_class) {
-                val tv = creatTextView(
-                    text = i.toString(), align = View.TEXT_ALIGNMENT_CENTER,
-                    w = wMain, bg = Color.rgb((0..255).random(),(0..255).random(),(0..255).random()))
-                tv.setOnClickListener {
-                    tv.setBackgroundColor(Color.RED)
-                    true
+            drawGroupLine(line=recView, group = gr, hHead = 150, bg=GOLD)
+            val classes = db.studyClassDAO().getStudyClassByIdJournal(id_journal)
+            val tasks = db.taskDAO().getTaskByIdJournal(id_journal)
+            drawHeaderLine(line=recView, size_fio_column=max_size, bg=Color.rgb(244, 164, 96), h=hHead, w=wHead, wadd = wadd, classes=classes, tasks=tasks)
+            var ni = 0
+            studentsFlow.filter { st -> st.id_group == gr.id }.forEachIndexed { i, item->
+                ni++
+                val mainLine = LinearLayout(this)
+                mainLine.orientation = LinearLayout.HORIZONTAL
+                var lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                lp.setMargins(3,3,3,3)
+                mainLine.layoutParams = lp
+                var lineColor = when(i%2){
+                    0-> Color.rgb(255, 245, 238)
+                    else -> Color.rgb(245, 222, 179)
                 }
-                tv.setOnLongClickListener {
-                    tv.setBackgroundColor(Color.WHITE)
-                    true
-                }
-                mainLine.addView(tv)
-            }
-            mainLine.addView(creatTextView(text = "|", w = wadd, align =4))
-            //Описание заданий
-            for(i in 0..count_work) {
-                val tv = creatTextView(
-                    text = i.toString(), align = View.TEXT_ALIGNMENT_CENTER,
-                    w = wMain, bg = Color.rgb((0..255).random(),(0..255).random(),(0..255).random()))
-                tv.setOnClickListener {
-                    tv.setBackgroundColor(Color.GREEN)
-                    true
-                }
-                tv.setOnLongClickListener {
-                    tv.setBackgroundColor(Color.YELLOW)
-                    true
-                }
-                mainLine.addView(tv)
-            }
-            mainLine.addView(creatTextView(text = "|", w = wadd, align =4))
-            recView.addView(mainLine)
+                mainLine.addView(creatTextView(text =ni.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))
+                mainLine.addView(creatTextView(text =item.id.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))//id студента
+                mainLine.addView(creatTextView(text =item.toString(), w =max_size, bg = lineColor))//ФИО
+                //Столбцы занятий
+                val studyAttendMark = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(id_journal, item.id!!)
+                drawColumnsWithClass(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain ,classes=classes, studyAttendMark=studyAttendMark)
+                mainLine.addView(creatTextView(text = "|", w = wadd, bg=GOLD, align =4))//Пустой столбец
+                //Столбец с работами
+                val studyTaskMark = db.studyTaskMarkDAO().getStudyTaskMarksByIdJournalAndIdStudent(id_journal, item.id!!)
+                drawColumnsWithWork(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain,tasks=tasks, studyTaskMark=studyTaskMark)
+                mainLine.addView(creatTextView(text = "|", w = wadd, bg=GOLD, align =4))//Пустой столбец
+                recView.addView(mainLine)
         }
         }
 
@@ -446,27 +372,121 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         findViewById<LinearLayout>(R.id.layout3).addView(horizScrollView)
     }
 
-    override fun onStop() {
-        super.onStop()
-        db.close()
-    }
-    override fun onDestroy() {
-        super.onDestroy()
-        db.close()
+    private fun drawHeaderLine(
+        line: LinearLayout,
+        size_fio_column: Int,
+        bg: Int = Color.WHITE,
+        h: Int,
+        w: Int,
+        wadd: Int,
+        classes: List<StudyClassWithInfo>,
+        tasks: List<StudyTaskWithInfo>,
+    ) {
+        val headLine = LinearLayout(this)
+        headLine.orientation = LinearLayout.HORIZONTAL
+        headLine.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+
+        headLine.addView(creatTextView(text ="№", h = h, bg=bg, align = View.TEXT_ALIGNMENT_CENTER))
+        headLine.addView(creatTextView(text ="ID", h = h, bg=bg, align = View.TEXT_ALIGNMENT_CENTER))
+        headLine.addView(creatTextView(text ="ФИО", h = h, bg=bg, w =size_fio_column, align = View.TEXT_ALIGNMENT_CENTER))
+        classes.forEachIndexed{ i, cl ->
+            val type = cl.type.abbr
+            val detail = cl.cl
+            headLine.addView(creatTextView(
+                text = ""+type+"\n"+detail.data+"\n"+(detail.theme?:"Темы нет"),
+                bg=bg, h = h, w = w, align = View.TEXT_ALIGNMENT_CENTER))
+        }
+        //Пустая колонка
+        headLine.addView(creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4))
+        tasks.forEachIndexed{ i, task ->
+            val type = task.type.abbr
+            val num_task = task.task.id_cur_num_task
+            headLine.addView(creatTextView(
+                text = ""+type+" "+num_task.toString(), bg = bg,
+                h = h,
+                w = w, align = View.TEXT_ALIGNMENT_CENTER))
+        }
+        //Пустая колонка
+        headLine.addView(creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4))
+        line.addView(headLine)
     }
 
-    fun basicAlert(view: View){
-        val builder = AlertDialog.Builder(this)
-        with(builder)
-        {
-            setTitle("Добавить вид занятия")
-            setMessage("We have a message")
-            setPositiveButton("Сохранить", DialogInterface.OnClickListener(function = positiveButtonClick))
-            setNegativeButton("Отмена", negativeButtonClick)
-            //setNeutralButton("Maybe", neutralButtonClick)
-            show()
+    private fun drawColumnsWithClass(
+        mainLine: LinearLayout,
+        size_fio_column: Int,
+        bg: Int = Color.WHITE,
+        w: Int,
+        h: Int,
+        classes: List<StudyClassWithInfo>,
+        studyAttendMark: List<StudyAttendMarkWithInfo>,
+    ) {
+        classes.forEachIndexed{ i, cl ->
+            val sam = studyAttendMark.filter { st->st.attendMark.id_study_class!! == cl.cl.id!!}
+            var text: String = when(sam.count()){
+                0 -> ""
+                else -> sam[0].attendMark.mark
+            }
+
+            val tv = creatTextView(
+                text = text, align = View.TEXT_ALIGNMENT_CENTER,
+                w = w, bg = bg)
+            tv.setOnClickListener {
+                tv.setBackgroundColor(Color.RED)
+                true
+            }
+            tv.setOnLongClickListener {
+                tv.setBackgroundColor(Color.WHITE)
+                true
+            }
+            mainLine.addView(tv)
         }
     }
+
+    private fun drawColumnsWithWork(
+        mainLine: LinearLayout,
+        size_fio_column: Int,
+        bg: Int = Color.WHITE,
+        w: Int,
+        h: Int,
+        tasks: List<StudyTaskWithInfo>,
+        studyTaskMark: List<StudyTaskMarkWithInfo>,
+    ) {
+
+        tasks.forEachIndexed{ i, task ->
+            val stm = studyTaskMark.filter { st->st.taskMark.id_task!! == task.task.id!!}
+            var text: String = when(stm.count()){
+                0 -> "Н"
+                else -> stm[0].taskMark.mark
+            }
+
+            val tv = creatTextView(text = text, align = View.TEXT_ALIGNMENT_CENTER, w = w, bg = bg)
+            tv.setOnClickListener {
+                tv.setBackgroundColor(Color.GREEN)
+                true
+            }
+            tv.setOnLongClickListener {
+                tv.setBackgroundColor(Color.YELLOW)
+                true
+            }
+            mainLine.addView(tv)
+        }
+    }
+
+    private fun drawGroupLine(
+        line: LinearLayout,
+        group: StudyGroup,
+        bg: Int = Color.WHITE,
+        hHead: Int,
+    ) {
+        val groupLine = LinearLayout(this)
+        groupLine.orientation = LinearLayout.HORIZONTAL
+        val tvGroup = creatTextView(text =""+group.abbr, bg = bg,h=hHead, ts=25.0)
+        tvGroup.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
+        groupLine.addView(tvGroup)
+        line.addView(groupLine)
+    }
+
+
     fun showdialog(x: Int, y: Int){
         val mDialogView = LayoutInflater.from(this).inflate(x, null)
         val mBuilder = AlertDialog.Builder(this).setView(mDialogView)
@@ -661,6 +681,76 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         }
     }
 
+    fun clearLayout(){
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.removeAllViews()
+        findViewById<LinearLayout>(R.id.layout3).removeAllViews()
+        setInvisibleView()
+    }
+    fun setInvisibleView(){
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.visibility = View.INVISIBLE
+        findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
+            view.visibility = View.INVISIBLE
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode === RESULT_OK && data != null) {
+            val filePath = data?.data
+            path = filePath
+            when (requestCode) {
+                //Чтение xls
+                777 -> {
+                    if(path.toString().endsWith("xls"))
+                        showdialog(R.layout.addsubject, 1)
+                }
+                //путь для экспорта
+                666 -> {
+                    ExporterImporterDB().exportDB(db, this, uri = path!!, db_name = "TeachJournal.db")
+                }
+            }
+        }
+    }
+
+    fun ReadXml(view: View){
+        if (path.toString().endsWith("xls")) {
+            ParseXML(context = this).readFromExcelFile(db, path!!);
+        }
+
+    }
+
+    inline fun <reified T> toArray(list: List<*>): Array<T> {
+        return (list as List<T>).toTypedArray()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        db.close()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        db.close()
+    }
+
+    fun convertDateToLong(date: String): Long {
+        val df = SimpleDateFormat("yyyy-MM-dd")
+        return df.parse(date).time
+    }
+
+    fun basicAlert(view: View){
+        val builder = AlertDialog.Builder(this)
+        with(builder)
+        {
+            setTitle("Добавить вид занятия")
+            setMessage("We have a message")
+            setPositiveButton("Сохранить", DialogInterface.OnClickListener(function = positiveButtonClick))
+            setNegativeButton("Отмена", negativeButtonClick)
+            //setNeutralButton("Maybe", neutralButtonClick)
+            show()
+        }
+    }
     fun hasPermissionsWithStorage(): Boolean{
         if (ActivityCompat.checkSelfPermission(this,  Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this,  Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ){
@@ -671,6 +761,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             return true
         }
     }
+
     private fun showToast(context: Context = applicationContext, message: String, duration: Int = Toast.LENGTH_LONG) {
         Toast.makeText(context, message, duration).show()
     }
