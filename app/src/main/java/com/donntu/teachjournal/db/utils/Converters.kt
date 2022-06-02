@@ -1,16 +1,17 @@
+
 package com.donntu.teachjournal.db.utils
 
 import androidx.room.TypeConverter
 import java.sql.Date
 
-class Converters {
+public class Converters {
     @TypeConverter
-    fun fromTimestamp(value: Long?): Date? {
-        return value?.let { Date(it) }
+    fun fromTimestamp( value: Long?) :
+            java.sql.Date {
+        return java.sql.Date(value ?: 0)
     }
-
     @TypeConverter
-    fun dateToTimestamp(date: Date?): Long? {
-        return date?.time
-    }
-}
+    fun dateToTimestamp(date :java.sql.Date?)
+            :Long {
+        return date?.getTime() ?: 0
+    }}
