@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity()
                 ExporterImporterDB().importDB(db, this, db_name = "TeachJournal.db")
                 true
             }
+            R.id.dropDB ->{
+                db.clearAllTables()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -186,7 +190,7 @@ class MainActivity : AppCompatActivity()
                         lay.removeAllViews()
                         val students = db.studentDAO().getStudentsByIdGroup(gr.id!!)
                         when (students.count()) {
-                            0 -> showToast(message = "В группе $gr.abbr еще нет студентов!")
+                            0 -> showToast(message = "В группе ${gr.abbr} еще нет студентов!")
                             else -> {
                                 val arrayAdapter: ArrayAdapter<*>
                                 val mDialogView = LayoutInflater.from(this@MainActivity)
@@ -196,8 +200,8 @@ class MainActivity : AppCompatActivity()
                                 val st: MutableList<String> = mutableListOf()
                                 val mapId = mutableMapOf<Int, Long>()
                                 students.forEachIndexed { index, entity ->
-                                    st += (students[index].family + " " + students[index].name + " " + students[index].patronymic)
-                                    mapId[index] = students[index].id!!.toLong()
+                                    st += (entity.family + " " + entity.name + " " + entity.patronymic)
+                                    mapId[index] = entity.id!!.toLong()
                                 }
                                 arrayAdapter = ArrayAdapter(this@MainActivity, R.layout.item, st)
                                 listView.adapter = arrayAdapter
@@ -219,7 +223,7 @@ class MainActivity : AppCompatActivity()
                                                     {
                                                         setTitle("Удаление")
                                                         setMessage("Вы уверены, что хотите удалить?")
-                                                        setPositiveButton("Да") { dialog, id ->
+                                                        setPositiveButton("Да") { _, _ ->
                                                             db.studentDAO()
                                                                 .deleteStudent(students[p2])
                                                             showListGroupAndStudents(idJournal)
@@ -233,13 +237,36 @@ class MainActivity : AppCompatActivity()
                                             menu.show()
                                         }
                                     }
-                                lay.addView(creatTextView(text = "Студенты группы: $gr.abbr",
+                                lay.addView(creatTextView(text = "Студенты группы: ${gr.abbr}",
                                     w = 600,
                                     bg = Color.WHITE,
                                     align = View.TEXT_ALIGNMENT_CENTER))
                                 lay.addView(mDialogView)
                             }
                         }
+                    }
+                    btn.setOnLongClickListener {
+                        val menu = PopupMenu(this@MainActivity, btn)
+                        menu.menu.apply {
+                            add("Удалить группу").setOnMenuItemClickListener {
+                                val builder =
+                                    AlertDialog.Builder(this@MainActivity)
+                                with(builder)
+                                {
+                                    setTitle("Удаление")
+                                    setMessage("Вы уверены, что хотите удалить?")
+                                    setPositiveButton("Да") { _, _ ->
+                                        db.studyGroupDAO().deleteStudyGroup(gr)
+                                        showListGroupAndStudents(idJournal)
+                                    }
+                                    setNegativeButton("Нет", null)
+                                    show()
+                                }
+                                true
+                            }
+                        }
+                        menu.show()
+                        true
                     }
                     if(i==0)
                         btn.performClick()
@@ -268,7 +295,7 @@ class MainActivity : AppCompatActivity()
                         lay.removeAllViews()
                         val journal = db.journalDAO().getJournalBySubjectId(s.id!!)
                         when (journal.count()) {
-                            0 -> showToast(message = "Журналы по $s.abbr еще не созданы!")
+                            0 -> showToast(message = "Журналы по ${s.abbr} еще не созданы!")
                             else -> {
                                 val arrayAdapter: ArrayAdapter<*>
                                 val mDialogView = LayoutInflater.from(this@MainActivity)
@@ -310,7 +337,7 @@ class MainActivity : AppCompatActivity()
                                                     {
                                                         setTitle("Удаление")
                                                         setMessage("Вы уверены, что хотите удалить?")
-                                                        setPositiveButton("Да") { dialog, id ->
+                                                        setPositiveButton("Да") { _, _ ->
                                                             db.journalDAO()
                                                                 .deleteJournal(journal[p2])
                                                             spinnerSubject?.setSelection(3)
@@ -324,13 +351,36 @@ class MainActivity : AppCompatActivity()
                                             menu.show()
                                         }
                                     }
-                                lay.addView(creatTextView(text = "Журналы по $s.abbr",
+                                lay.addView(creatTextView(text = "Журналы по ${s.abbr}",
                                     w = 600,
                                     bg = Color.WHITE,
                                     align = View.TEXT_ALIGNMENT_CENTER))
                                 lay.addView(mDialogView)
                             }
                         }
+                    }
+                    btn.setOnLongClickListener {
+                        val menu = PopupMenu(this@MainActivity, btn)
+                        menu.menu.apply {
+                            add("Удалить предмет").setOnMenuItemClickListener {
+                                val builder =
+                                    AlertDialog.Builder(this@MainActivity)
+                                with(builder)
+                                {
+                                    setTitle("Удаление")
+                                    setMessage("Вы уверены, что хотите удалить?")
+                                    setPositiveButton("Да") { _, _ ->
+                                        db.subjectDAO().deleteSubject(s)
+                                        showListSubjectAndJournals()
+                                    }
+                                    setNegativeButton("Нет", null)
+                                    show()
+                                }
+                                true
+                            }
+                        }
+                        menu.show()
+                        true
                     }
                     if(i==0)
                         btn.performClick()
@@ -343,15 +393,38 @@ class MainActivity : AppCompatActivity()
     private fun showListClassesType() {
         val ll = findViewById<LinearLayout>(R.id.layout2)
         ll.visibility = View.VISIBLE
-        val type = db.taskDAO().getTaskType()
-        val num = db.taskDAO().getTaskType().count()
+        val type = db.studyClassDAO().getStudyClassType()
         val arr: MutableList<String> = mutableListOf()
-        for(i in 0 until num){
-            arr += type[i].abbr
+        type.forEachIndexed { i, typ ->
+
+            arr += typ.abbr
             val btn = Button(this@MainActivity)
             btn.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             btn.text = arr[i]
             btn.setBackgroundResource(R.drawable.rec)
+            btn.setOnLongClickListener {
+                val menu = PopupMenu(this@MainActivity, btn)
+                menu.menu.apply {
+                    add("Удалить тип занятия").setOnMenuItemClickListener {
+                        val builder =
+                            AlertDialog.Builder(this@MainActivity)
+                        with(builder)
+                        {
+                            setTitle("Удаление")
+                            setMessage("Вы уверены, что хотите удалить?")
+                            setPositiveButton("Да") { _, _ ->
+                                db.studyClassDAO().deleteStudyClassType(type[i])
+                                showListClassesType()
+                            }
+                            setNegativeButton("Нет", null)
+                            show()
+                        }
+                        true
+                    }
+                }
+                menu.show()
+                true
+            }
             ll.addView(btn)
         }
     }
@@ -423,7 +496,7 @@ class MainActivity : AppCompatActivity()
                     val studentNotPass = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(
                         this.idJournal, item.id!!).
                     filter { st-> st.attendMark.id_study_mark_type != 3L}
-                    tvHours.text = "$studentNotPass.count()/$classes"
+                    tvHours.text = "${studentNotPass.count()}/$classes"
                 }
                 tvHours.performClick()
                 //Столбцы занятий
@@ -493,7 +566,7 @@ class MainActivity : AppCompatActivity()
                         {
                             setTitle("Удаление")
                             setMessage("Вы уверены, что хотите удалить?")
-                            setPositiveButton("Да") { dialog, id ->
+                            setPositiveButton("Да") { _, _ ->
                                 db.studyClassDAO().deleteStudyClass(cl.cl)
                                 showJournal(idJournal)
                             }
@@ -510,7 +583,7 @@ class MainActivity : AppCompatActivity()
         }
         //Колонка добавления занятия
         val addSC = creatTextView(text = "+", h =h, w = wadd, bg=gold, align =4)
-        addSC.setOnClickListener{view->
+        addSC.setOnClickListener{
             addStudyClass(id_journ = idJournal)
         }
         headLine.addView(addSC)
@@ -535,7 +608,7 @@ class MainActivity : AppCompatActivity()
                         {
                             setTitle("Удаление")
                             setMessage("Вы уверены, что хотите удалить?")
-                            setPositiveButton("Да") { dialog, id ->
+                            setPositiveButton("Да") { _, _ ->
                                 db.taskDAO().deleteTask(task.task)
                                 showJournal(idJournal)
                             }
@@ -551,7 +624,7 @@ class MainActivity : AppCompatActivity()
         }
         //Колонка добавления задания
         val addST = creatTextView(text = "+", h = h, w = wadd, bg = gold, align = 4)
-        addST.setOnClickListener{view->
+        addST.setOnClickListener{
             addStudyTask(id_journ = idJournal)
         }
         headLine.addView(addST)
@@ -681,7 +754,7 @@ class MainActivity : AppCompatActivity()
                 val types = db.studyAttendMarkDAO().getAttendMarkType()
                 types.forEach{ type ->
                     val isCur = type.id!!.toLong()==markInstrumentStudyClass
-                    menu.menu.add(if(!isCur) "Отметка: $type.title" else "Сбросить отметку").setOnMenuItemClickListener {
+                    menu.menu.add(if(!isCur) "Отметка: ${type.title}" else "Сбросить отметку").setOnMenuItemClickListener {
                         if(isCur){
                             markInstrumentStudyClass =  0
                         } else {
@@ -811,7 +884,7 @@ class MainActivity : AppCompatActivity()
                 val types = db.studyTaskMarkDAO().getTaskMarkType()
                 types.forEach{ type ->
                     val isCur = type.id!!.toLong()==markInstrumentStudyTask
-                    menu.menu.add(if(!isCur) "Отметка: $type.title" else "Сбросить отметку").setOnMenuItemClickListener {
+                    menu.menu.add(if(!isCur) "Отметка: ${type.title}" else "Сбросить отметку").setOnMenuItemClickListener {
                         markInstrumentStudyTask = if(isCur) 0 else type.id
                         true
                     }
@@ -1223,7 +1296,7 @@ class MainActivity : AppCompatActivity()
                         val pp = mapId[p2]!!
                         val journal = db.journalDAO().getJournal(id_journ)
                         val insId = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = id_journ, id_group = pp))
-                        showToast(message = "В журнал $id_journ: \"$journal.note\" добавлена группа $grr[p2].abbr!")
+                        showToast(message = "В журнал $id_journ: \"${journal.note}\" добавлена группа ${grr[p2].abbr}!")
                         mAlertDialog.dismiss()
                     }
 
