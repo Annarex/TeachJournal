@@ -4,12 +4,11 @@
     android:title="Item">
     <item
         android:id="@+id/itemExportDB"
-        android:icon="@android:drawable/stat_sys_upload"
-        android:title="Настройки"
-        app:showAsAction="ifRoom" />
+        android:title="Экспорт" />
     <item
         android:id="@+id/itemImportDB"
-        android:icon="@android:drawable/stat_sys_download"
-        android:title="Настройки"
-        app:showAsAction="ifRoom" />
+        android:title="Импорт" />
+    <item
+        android:id="@+id/dropDB"
+        android:title="Дроп БД" />
 </menu>
