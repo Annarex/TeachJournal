@@ -85,6 +85,7 @@ class MainActivity : AppCompatActivity()
                         showdialog(R.layout.addsubject, 1)
                     }
                     2 -> {
+                        clearLayout()
                         showListGroupAndStudents(idJournal)
                     }
                 }
@@ -102,6 +103,7 @@ class MainActivity : AppCompatActivity()
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,2)
+
                     }
                     2 -> {
                         when(db.subjectDAO().getSubject().count()){
@@ -112,6 +114,7 @@ class MainActivity : AppCompatActivity()
                         }
                     }
                     3 -> {
+                        clearLayout()
                         showListSubjectAndJournals()
                     }
                 }
@@ -132,6 +135,7 @@ class MainActivity : AppCompatActivity()
                         clearLayout()
                     }
                     2 -> {
+                        clearLayout()
                         showListClassesType()
                     }
                 }
@@ -163,13 +167,12 @@ class MainActivity : AppCompatActivity()
         when(id_journal){
             0L -> showToast(message = "Журнал не выбран!")
             else -> {
+                clearLayout()
                 showTable(id_journal)
             }
         }
     }
-    @SuppressLint("InflateParams")
     private fun showListGroupAndStudents(idJournal: Long) {
-        clearLayout()
         val ll = findViewById<LinearLayout>(R.id.layout2)
         ll.visibility = View.VISIBLE
         val group = db.studyGroupDAO().getStudyGroup()
@@ -275,7 +278,6 @@ class MainActivity : AppCompatActivity()
         }
     }
     private fun showListSubjectAndJournals() {
-        clearLayout()
         val ll = findViewById<LinearLayout>(R.id.layout2)
         ll.visibility = View.VISIBLE
         val subject = db.subjectDAO().getSubject()
@@ -390,7 +392,6 @@ class MainActivity : AppCompatActivity()
         }
     }
     private fun showListClassesType() {
-        clearLayout()
         val ll = findViewById<LinearLayout>(R.id.layout2)
         ll.visibility = View.VISIBLE
         val type = db.studyClassDAO().getStudyClassType()
