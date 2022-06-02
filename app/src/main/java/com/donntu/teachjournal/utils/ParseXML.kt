@@ -1,30 +1,19 @@
 package com.donntu.teachjournal.utils
-import android.R.attr.data
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.provider.CalendarContract.Attendees.query
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import androidx.core.net.toUri
 import com.donntu.teachjournal.db.DBJournalHelper
-import com.donntu.teachjournal.db.entity.FlowStudents
 import com.donntu.teachjournal.db.entity.Student
 import com.donntu.teachjournal.db.entity.StudyGroup
 import org.apache.poi.ss.usermodel.WorkbookFactory
-import java.io.File
-import java.io.FileInputStream
 
 
-class ParseXML {
-    var context:Context? = null
-    constructor(context: Context){
-        this.context = context
-    }
+class ParseXML(context: Context) {
+    private var context:Context? = context
     fun readFromExcelFile(db: DBJournalHelper, uri: Uri) {
         try {
-            val inputStream = context?.getContentResolver()?.openInputStream(uri)
+            val inputStream = context?.contentResolver?.openInputStream(uri)
             val xlWb = WorkbookFactory.create(inputStream)
             var index = 9
             var cn_new_records = 0
@@ -44,7 +33,7 @@ class ParseXML {
                 if (idExist == 0L) cn_new_records++
 
                 index += 2
-                var students = mutableListOf<Student>()
+                val students = mutableListOf<Student>()
                 if (xlWs.getRow(index)?.getCell(1) != null) {
                     while (xlWs.getRow(index)?.getCell(1) != null) {
                         val fio = xlWs.getRow(index)?.getCell(1).toString()
@@ -73,7 +62,7 @@ class ParseXML {
 
             Toast.makeText(
                 context,
-                "Кол-во обновленных записей: " + cn_new_records,
+                "Кол-во обновленных записей: $cn_new_records",
                 Toast.LENGTH_SHORT
             ).show()
 

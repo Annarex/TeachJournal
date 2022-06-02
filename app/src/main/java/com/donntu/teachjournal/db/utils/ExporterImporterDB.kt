@@ -1,6 +1,5 @@
 package com.donntu.teachjournal.db.utils
 
-import android.R.attr.path
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
@@ -24,12 +23,12 @@ class ExporterImporterDB{
             val currentDB = File(path)
             val backupDB = File(downloadDir,path.split("/").last())
             if(currentDB.exists()){
-                val src: FileChannel = FileInputStream(currentDB).getChannel()
-                val dst: FileChannel = FileOutputStream(backupDB).getChannel()
+                val src: FileChannel = FileInputStream(currentDB).channel
+                val dst: FileChannel = FileOutputStream(backupDB).channel
                 dst.transferFrom(src, 0, src.size())
                 src.close()
                 dst.close()
-                Toast.makeText(context, "База данных сохранена по пути: "+backupDB, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "База данных сохранена по пути: $backupDB", Toast.LENGTH_SHORT).show()
 
             }
             }
@@ -46,12 +45,12 @@ class ExporterImporterDB{
                 val currentDB = File(path)
                 val isExists = currentDB.exists()
                 if (isExists) {
-                    val src: FileChannel = FileInputStream(sd).getChannel()
-                    val dst: FileChannel = FileOutputStream(currentDB).getChannel()
+                    val src: FileChannel = FileInputStream(sd).channel
+                    val dst: FileChannel = FileOutputStream(currentDB).channel
                     dst.transferFrom(src, 0, src.size())
                     src.close()
                     dst.close()
-                    Toast.makeText(context, "DB замещена на копию: "+sd, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "DB замещена на копию: $sd", Toast.LENGTH_SHORT).show()
                 }
         } catch (e: Exception) {
             e.printStackTrace()

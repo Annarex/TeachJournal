@@ -3,19 +3,16 @@ package com.donntu.teachjournal.db.entity
 import androidx.room.*
 import java.io.Serializable
 
-@Entity(tableName = "StudyAttendMark", foreignKeys = arrayOf(
-    ForeignKey(entity = StudyClass::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_study_class"),
-        onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = Student::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_student"),
-        onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = AttendMarkType::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_study_mark_type"),
-        onDelete = ForeignKey.CASCADE)),
+@Entity(tableName = "StudyAttendMark", foreignKeys = [ForeignKey(entity = StudyClass::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_study_class"),
+    onDelete = ForeignKey.CASCADE), ForeignKey(entity = Student::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_student"),
+    onDelete = ForeignKey.CASCADE), ForeignKey(entity = AttendMarkType::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_study_mark_type"),
+    onDelete = ForeignKey.CASCADE)],
     indices = [Index(value = ["id_study_class"]),Index(value = ["id_student"]),Index(value = ["id_study_mark_type"]),Index(value = ["id_study_class","id_student"], unique = true)]
 )
 

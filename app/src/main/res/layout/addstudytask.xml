@@ -83,7 +83,8 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:text="Сохранить" />
+            android:text="Сохранить"
+            style="?android:attr/buttonBarButtonStyle" />
 
         <Button
             android:id="@+id/declineb"
@@ -92,6 +93,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:text="Отмена" />
+            android:text="Отмена"
+            style="?android:attr/buttonBarButtonStyle" />
     </LinearLayout>
 </LinearLayout>

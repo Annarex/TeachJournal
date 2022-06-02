@@ -3,11 +3,6 @@ package com.donntu.teachjournal.db.dao
 import androidx.room.*
 import com.donntu.teachjournal.db.entity.Task
 import com.donntu.teachjournal.db.entity.TaskType
-import com.donntu.teachjournal.db.entity_with_relate.StudyTaskMarkWithInfo
-import com.donntu.teachjournal.db.entity_with_relate.StudyTaskWithInfo
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import java.io.Serializable
 
 @Dao
 interface TaskAndTypeDAO {

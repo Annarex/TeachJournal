@@ -10,10 +10,7 @@ import com.donntu.teachjournal.db.entity.*
 import com.donntu.teachjournal.db.utils.Converters
 
 
-@Database(entities = arrayOf(
-    AttendMarkType::class, FlowStudents::class, Journal::class, Student::class,
-    StudyAttendMark::class, StudyClass::class, StudyClassType::class, StudyGroup::class,
-    StudyTaskMark::class, Subject::class, Task::class, TaskMarkType::class, TaskType::class),
+@Database(entities = [AttendMarkType::class, FlowStudents::class, Journal::class, Student::class, StudyAttendMark::class, StudyClass::class, StudyClassType::class, StudyGroup::class, StudyTaskMark::class, Subject::class, Task::class, TaskMarkType::class, TaskType::class],
     version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class DBJournalHelper: RoomDatabase() {
@@ -52,12 +49,12 @@ abstract class DBJournalHelper: RoomDatabase() {
         }
 
         fun addDAO(){
-            var dao1 = INSTANCE?.studyAttendMarkDAO()
+            val dao1 = INSTANCE?.studyAttendMarkDAO()
             dao1?.insertAttendMarkType(AttendMarkType(title = "Знак"))
             dao1?.insertAttendMarkType(AttendMarkType(title = "Оценка"))
             dao1?.insertAttendMarkType(AttendMarkType(title = "Пропуск"))
 
-            var dao2 = INSTANCE?.studyClassDAO()
+            val dao2 = INSTANCE?.studyClassDAO()
             dao2?.insertStudyClassType(StudyClassType(title = "Лекция",abbr="ЛЕК"))
             dao2?.insertStudyClassType(StudyClassType(title = "Практика",abbr="ПР"))
             dao2?.insertStudyClassType(StudyClassType(title = "Лабораторная",abbr="ЛАБ"))

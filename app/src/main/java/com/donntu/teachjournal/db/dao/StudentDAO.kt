@@ -2,14 +2,13 @@ package com.donntu.teachjournal.db.dao
 
 import androidx.room.*
 import com.donntu.teachjournal.db.entity.Student
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import java.io.Serializable
 
 @Dao
 interface StudentDAO {
     @Query("SELECT * FROM Student ORDER BY id_group")
     fun getStudent(): List<Student>
+    @Query("SELECT * FROM Student  where id_group=:idgroup ORDER BY id_group")
+    fun getStudentsByIdGroup(idgroup: Long): List<Student>
 
     @Query("SELECT sst.id, sst.family, sst.name, sst.patronymic, sst.id_group FROM Student as sst, StudyGroup as gg, FlowStudents as fl WHERE sst.id_group=gg.id AND gg.id=fl.id_group AND fl.id_journal = :x ORDER BY sst.id_group, fl.id_group")
     fun getStudentGroupByJournal(x: Long): List<Student>

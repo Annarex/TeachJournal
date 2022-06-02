@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">TeachJournal</string>
-    <string name="strAddGroup">Добавить группу</string>
+    <string name="strAddGroup" tools:keep="@string/strAddGroup">Добавить группу</string>
 </resources>
