@@ -277,6 +277,7 @@ class MainActivity : AppCompatActivity()
         ts: Double = 14.0,
         lp: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
             LinearLayout.LayoutParams.MATCH_PARENT),
+
     ): TextView{
         var view = TextView(this)  as TextView
         view.text = text
@@ -329,7 +330,6 @@ class MainActivity : AppCompatActivity()
                 mainLine.addView(creatTextView(text =ni.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))
                 mainLine.addView(creatTextView(text =item.id.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))//id студента
                 mainLine.addView(creatTextView(text =item.toString(), w =max_size, bg = lineColor))//ФИО
-
                 val tvHours = creatTextView(text = "", align = View.TEXT_ALIGNMENT_CENTER,w = wMain, bg = lineColor)
                 tvHours.setOnClickListener {
                     val classes = db.studyClassDAO().getStudyClassByIdJournal(id_journal).count()
@@ -727,7 +727,6 @@ class MainActivity : AppCompatActivity()
                         true
                     }
                 }
-
                 menu.show()
                 true
             }
@@ -885,7 +884,6 @@ class MainActivity : AppCompatActivity()
                                 idExist
                             }
                         }
-                        showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
                     }
                     else showToast(message = "Заполните все поля!")
                     spinner3?.setSelection(2)
@@ -988,6 +986,76 @@ class MainActivity : AppCompatActivity()
         db.close()
     }
 
+    fun clearLayout(){
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.removeAllViews()
+        findViewById<LinearLayout>(R.id.layout3).removeAllViews()
+        setInvisibleView()
+    }
+    fun setInvisibleView(){
+        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+        lay2.visibility = View.INVISIBLE
+        findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
+            view.visibility = View.INVISIBLE
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode === RESULT_OK && data != null) {
+            val filePath = data?.data
+            path = filePath
+            when (requestCode) {
+                //Чтение xls
+                777 -> {
+                    if(path.toString().endsWith("xls"))
+                        showdialog(R.layout.addsubject, 1)
+                }
+                //путь для экспорта
+                666 -> {
+                    ExporterImporterDB().exportDB(db, this, uri = path!!, db_name = "TeachJournal.db")
+                }
+            }
+        }
+    }
+
+    fun ReadXml(view: View){
+        if (path.toString().endsWith("xls")) {
+            ParseXML(context = this).readFromExcelFile(db, path!!);
+        }
+
+    }
+
+    inline fun <reified T> toArray(list: List<*>): Array<T> {
+        return (list as List<T>).toTypedArray()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        db.close()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        db.close()
+    }
+
+    fun convertDateToLong(date: String): Long {
+        val df = SimpleDateFormat("yyyy-MM-dd")
+        return df.parse(date).time
+    }
+
+    fun basicAlert(view: View){
+        val builder = AlertDialog.Builder(this)
+        with(builder)
+        {
+            setTitle("Добавить вид занятия")
+            setMessage("We have a message")
+            setPositiveButton("Сохранить", DialogInterface.OnClickListener(function = positiveButtonClick))
+            setNegativeButton("Отмена", negativeButtonClick)
+            //setNeutralButton("Maybe", neutralButtonClick)
+            show()
+        }
+    }
     fun hasPermissionsWithStorage(): Boolean{
         if (ActivityCompat.checkSelfPermission(this,  Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this,  Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ){
