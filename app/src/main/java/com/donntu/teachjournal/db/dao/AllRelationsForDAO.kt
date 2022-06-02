@@ -1,4 +1,4 @@
-package com.donntu.teachjournal.db.entity_with_relate
+package com.donntu.teachjournal.db.dao
 
 import androidx.room.Embedded
 import androidx.room.Relation

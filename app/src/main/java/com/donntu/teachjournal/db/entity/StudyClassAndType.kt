@@ -4,15 +4,13 @@ import androidx.room.*
 import java.io.Serializable
 import java.sql.Date
 
-@Entity(tableName = "StudyClass", foreignKeys = arrayOf(
-    ForeignKey(entity = StudyClassType::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_study_class_type"),
-        onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = Journal::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_journal"),
-        onDelete = ForeignKey.CASCADE)),
+@Entity(tableName = "StudyClass", foreignKeys = [ForeignKey(entity = StudyClassType::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_study_class_type"),
+    onDelete = ForeignKey.CASCADE), ForeignKey(entity = Journal::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_journal"),
+    onDelete = ForeignKey.CASCADE)],
     indices = [Index(value = ["id_study_class_type"]),Index(value = ["id_journal"])]
 )
 

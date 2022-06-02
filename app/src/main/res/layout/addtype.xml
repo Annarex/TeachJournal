@@ -62,7 +62,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Сохранить"
-            android:minWidth="135dp" />
+            android:minWidth="135dp"
+            style="?android:attr/buttonBarButtonStyle" />
 
         <Button
             android:id="@+id/dialogCancel"

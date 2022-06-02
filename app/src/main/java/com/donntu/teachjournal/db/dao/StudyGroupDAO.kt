@@ -1,12 +1,7 @@
 package com.donntu.teachjournal.db.dao
 
 import androidx.room.*
-import com.donntu.teachjournal.db.entity.Journal
 import com.donntu.teachjournal.db.entity.StudyGroup
-import com.donntu.teachjournal.db.entity_with_relate.StudentsInGroup
-import io.reactivex.Completable
-import io.reactivex.Maybe
-import java.io.Serializable
 
 @Dao
 interface StudyGroupDAO {

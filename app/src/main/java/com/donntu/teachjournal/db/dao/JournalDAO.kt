@@ -2,8 +2,6 @@ package com.donntu.teachjournal.db.dao
 
 import androidx.room.*
 import com.donntu.teachjournal.db.entity.Journal
-import io.reactivex.Completable
-import io.reactivex.Maybe
 
 @Dao
 interface JournalDAO {

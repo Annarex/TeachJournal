@@ -4,15 +4,13 @@ import androidx.room.*
 import java.io.Serializable
 
 
-@Entity(tableName = "Task", foreignKeys = arrayOf(
-    ForeignKey(entity = Journal::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_journal"),
-        onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = TaskType::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_task_type"),
-        onDelete = ForeignKey.CASCADE)),
+@Entity(tableName = "Task", foreignKeys = [ForeignKey(entity = Journal::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_journal"),
+    onDelete = ForeignKey.CASCADE), ForeignKey(entity = TaskType::class,
+    parentColumns = arrayOf("id"),
+    childColumns = arrayOf("id_task_type"),
+    onDelete = ForeignKey.CASCADE)],
     indices = [Index(value = ["id_journal"]),Index(value = ["id_cur_num_task"]),Index(value = ["id_task_type"])]
 )
 class Task (

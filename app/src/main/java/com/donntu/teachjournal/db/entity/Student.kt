@@ -3,11 +3,10 @@ package com.donntu.teachjournal.db.entity
 import androidx.room.*
 import java.io.Serializable
 
-@Entity(tableName = "Student", foreignKeys = arrayOf(
-    ForeignKey(entity = StudyGroup::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("id_group"),
-        onDelete = ForeignKey.CASCADE)),
+@Entity(tableName = "Student", foreignKeys = [ForeignKey(entity = StudyGroup::class,
+    parentColumns = ["id"],
+    childColumns = ["id_group"],
+    onDelete = ForeignKey.CASCADE)],
     indices = [Index(value = ["id_group"]),Index(value = ["family","name","patronymic","id_group"], unique = true)]
 )
 class Student(
@@ -19,6 +18,6 @@ class Student(
     val id_group: Long
 ): Serializable{
     override fun toString(): String {
-        return family+ " "+ name[0].toUpperCase()+". "+ patronymic[0].toUpperCase()+". "
+        return family+ " "+ name[0].uppercaseChar() +". "+ patronymic[0].uppercaseChar() +". "
     }
 }

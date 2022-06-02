@@ -1,8 +1,8 @@
 package com.donntu.teachjournal
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -13,41 +13,34 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.forEach
 import androidx.core.view.setPadding
 import com.donntu.teachjournal.db.DBJournalHelper
 import com.donntu.teachjournal.db.entity.*
-import com.donntu.teachjournal.db.entity_with_relate.StudyAttendMarkWithInfo
-import com.donntu.teachjournal.db.entity_with_relate.StudyClassWithInfo
-import com.donntu.teachjournal.db.entity_with_relate.StudyTaskMarkWithInfo
-import com.donntu.teachjournal.db.entity_with_relate.StudyTaskWithInfo
+import com.donntu.teachjournal.db.dao.StudyClassWithInfo
+import com.donntu.teachjournal.db.dao.StudyTaskWithInfo
 import com.donntu.teachjournal.db.utils.ExporterImporterDB
 import com.donntu.teachjournal.utils.ParseXML
 import java.sql.Date
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
-
-var select: String? =null
-
-class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
+class MainActivity : AppCompatActivity()
 {
-    //удалил комментарий
-    var path: Uri? = null
-    var languages = arrayOf("Группа","Добавить", "Показать все")
-    var list_of_items = arrayOf("Дисциплина", "Добавить дисциплину", "Создать журнал", "Показать все")
-    var list_of_items2 = arrayOf("Вид занятия", "Добавить", "Показать все")
-    //var select=null
+    private var path: Uri? = null
+    val listSpinnerGroup = arrayOf("Группа","Добавить", "Показать все")
+    val listSpinnerSubject = arrayOf("Дисциплина", "Добавить дисциплину", "Создать журнал", "Показать все")
+    val listSpinnerClassesType = arrayOf("Вид занятия", "Добавить", "Показать все")
+    var idJournal: Long = 0L
+    private var markInstrumentStudyClass = 0L
+    private var symbolPass = 0
+    private var markInstrumentStudyTask = 0L
+    var spinnerGroup:Spinner? =null
+    var spinnerSubject:Spinner? =null
+    var spinnerClassType:Spinner? =null
+    private var writeMode:Boolean? = true
 
-    val positiveButtonClick = { dialog: DialogInterface, which: Int ->
-        Toast.makeText(applicationContext,
-            "Да", Toast.LENGTH_SHORT).show()
-    }
-    val negativeButtonClick = { dialog: DialogInterface, which: Int ->
-        Toast.makeText(applicationContext,
-            "Нет", Toast.LENGTH_SHORT).show()
-    }
+
+    val db by lazy { DBJournalHelper.getDatabase(this) }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater: MenuInflater = menuInflater
@@ -59,8 +52,8 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             return false
         return when (item.itemId) {
             R.id.itemExportDB -> {
-                val intent = Intent().setAction(Intent.ACTION_GET_CONTENT).setType("*/*")
-                startActivityForResult(Intent.createChooser(intent, "Выбор пути экспорта"), 666)
+                //val intent = Intent().setAction(Intent.ACTION_GET_CONTENT).setType("*/*")
+                //startActivityForResult(Intent.createChooser(intent, "Выбор пути экспорта"), 666)
                 true
             }
             R.id.itemImportDB ->{
@@ -70,63 +63,18 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             else -> super.onOptionsItemSelected(item)
         }
     }
-    var id_journal: Long = 0L
-    companion object {
-        var spinner:Spinner? =null
-        var spinner2:Spinner? =null
-        var spinner3:Spinner? =null
-    }
-    val db by lazy { DBJournalHelper.getDatabase(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         registerSpinner()
-        var arrayAdapter: ArrayAdapter<*>
-        var addgroup = findViewById<Button>(R.id.dialogaddgroup)
-        addgroup.setOnClickListener {
-            when (id_journal) {
-                0L -> showToast(message = "Не выбран журнал!")
-                else -> {
-                    val builder = AlertDialog.Builder(this)
-                    val mDialogView = LayoutInflater.from(this).inflate(R.layout.listofgroup, null)
-                    var ll = mDialogView.findViewById<ListView>(R.id.list)
-                    var gr: MutableList<String> = mutableListOf()
-                    var grr = db.studyGroupDAO().getStudyGroup()
-                    var mapId = mutableMapOf<Int, Long>()
-                    grr.forEachIndexed{index, entity->
-                        gr += grr[index].abbr
-                        mapId[index] = grr[index].id!!.toLong()
-                    }
-                    arrayAdapter = ArrayAdapter(this, R.layout.item, gr)
-                    ll.adapter = arrayAdapter
-                    val mBuilder = AlertDialog.Builder(this).setView(mDialogView)
-                    val mAlertDialog = mBuilder.show()
-                    ll.onItemClickListener = object : AdapterView.OnItemClickListener {
-                        override fun onItemClick(
-                            p0: AdapterView<*>?,
-                            p1: View?,
-                            p2: Int,
-                            p3: Long,
-                        ) {
-                            val pp = mapId[p2]!!
-                            val journal = db.journalDAO().getJournal(id_journal)
-                            val insId = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = id_journal, id_group = pp))
-                            showToast(message = "В журнал ${id_journal}: \"${journal.note}\" добавлена группа ${grr[p2].abbr}!")
-                            mAlertDialog.dismiss()
-                        }
-                    }
-
-                }
-            }
-        }
     }
 
-    fun registerSpinner(){
-        spinner = findViewById<Spinner>(R.id.spinner)
-
-        spinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+    private fun registerSpinner(){
+        spinnerGroup = findViewById(R.id.spinner)
+        spinnerGroup?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                spinner?.setSelection(0);
+                spinnerGroup?.setSelection(0)
                 when(position){
                     1 -> {
                         clearLayout()
@@ -134,12 +82,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     }
                     2 -> {
                         clearLayout()
-                        when(id_journal){
-                            0L -> showToast(message = "Журнал не выбран!")
-                            else -> {
-                                showTable(id_journal)
-                            }
-                        }
+                        showListGroupAndStudents(idJournal)
                     }
                 }
             }
@@ -147,13 +90,12 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             override fun onNothingSelected(arg0: AdapterView<*>?) {
                 // TODO Auto-generated method stub
             }
-        })
+        }
 
-        spinner2 = findViewById<Spinner>(R.id.spinner2)
-        spinner2?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-
+        spinnerSubject = findViewById(R.id.spinner2)
+        spinnerSubject?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                spinner2?.setSelection(0);
+                spinnerSubject?.setSelection(0)
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,2)
@@ -168,68 +110,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     }
                     3 -> {
                         clearLayout()
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.visibility = View.VISIBLE
-                        var subject = db.subjectDAO().getSubject()
-                        when(subject.count()) {
-                            0 -> showToast(message = "Нет дисциплин!")
-                            else -> {
-                                var button4_Id: Int = 111
-                                var arr: MutableList<String> = mutableListOf()
-                                subject.forEachIndexed{i, s->
-                                    arr += s.abbr
-                                    val button_dynamic = Button(this@MainActivity)
-                                    button_dynamic.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT )
-                                    button_dynamic.text = arr[i]
-                                    var b = "button$i"
-                                    button_dynamic.setId(button4_Id)
-                                    button4_Id++
-                                    button_dynamic.setBackgroundResource(R.drawable.rec)
-                                    button_dynamic.setOnClickListener(object : View.OnClickListener {
-                                        override fun onClick(view: View?) {
-                                            val lay =findViewById<LinearLayout>(R.id.layout3)
-                                            lay.removeAllViews()
-                                            var grr = db.journalDAO().getJournalBySubjectId(s.id!!)
-                                            when(grr.count()){
-                                                0 -> showToast(message = "Журналы по ${s.abbr} еще не созданы!")
-                                                else ->{
-                                                    var arrayAdapter: ArrayAdapter<*>
-                                                    val mDialogView = LayoutInflater.from(this@MainActivity).inflate(R.layout.listofgroup, null)
-                                                    var listView = mDialogView.findViewById<ListView>(R.id.list)
-
-                                                    var gr: MutableList<String> = mutableListOf()
-                                                    var mapId = mutableMapOf<Int, Long>()
-                                                    grr.forEachIndexed{index, entity->
-                                                        gr += grr[index].note
-                                                        mapId[index] = grr[index].id!!.toLong()
-                                                    }
-                                                    arrayAdapter = ArrayAdapter(this@MainActivity, R.layout.item, gr)
-                                                    listView.adapter = arrayAdapter
-                                                    listView.onItemClickListener = object : AdapterView.OnItemClickListener {
-                                                        override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                                                            findViewById<Button>(R.id.dialogaddgroup).visibility = View.VISIBLE
-                                                            id_journal = mapId[p2]!!
-                                                            showToast(message = "Выбран журнал ${id_journal} по ${s.abbr}")
-                                                        }
-                                                    };
-                                                    listView.onItemLongClickListener = object: AdapterView.OnItemLongClickListener{
-                                                        override fun onItemLongClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long):Boolean {
-                                                            id_journal = mapId[p2]!!
-                                                            spinner?.setSelection(2)
-                                                            return true
-                                                        }
-                                                    }
-                                                    lay.addView(creatTextView(text ="Журналы по ${s.abbr}",w=600,bg=Color.WHITE, align = View.TEXT_ALIGNMENT_CENTER))
-                                                    lay.addView(mDialogView)
-                                                }
-                                            }
-                                        }
-                                    })
-                                    ll.addView(button_dynamic)
-                                }
-//
-                            }
-                        }
+                        showListSubjectAndJournals()
                     }
                 }
             }
@@ -237,38 +118,20 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             override fun onNothingSelected(arg0: AdapterView<*>?) {
                 // TODO Auto-generated method stub
             }
-        })
+        }
 
-        spinner3 = findViewById<Spinner>(R.id.spinner3)
-        spinner3?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+        spinnerClassType = findViewById(R.id.spinner3)
+        spinnerClassType?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                spinner3?.setSelection(0)
+                spinnerClassType?.setSelection(0)
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,3)
                         clearLayout()
                     }
-                    2 -> {//view?.let { basicAlert(it) }
+                    2 -> {
                         clearLayout()
-                        val ll = findViewById<LinearLayout>(R.id.layout2)
-                        ll.visibility = View.VISIBLE
-                        var type = db.taskDAO().getTaskType()
-                        var num = db.taskDAO().getTaskType().count()
-                        var button4_Id: Int = 1111
-                        var arr: MutableList<String> = mutableListOf()
-                        for(i in 0..num-1){
-                            arr += type[i].abbr
-                            val button_dynamic = Button(this@MainActivity)
-                            button_dynamic.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                            button_dynamic.text = arr[i]
-                            button_dynamic.setId(button4_Id)
-                            button4_Id++
-                            button_dynamic.setBackgroundResource(R.drawable.rec)
-                            //button_dynamic.setOnClickListener{button_dynamic.setBackgroundColor(Color.argb(0,221,160,221))}
-                            //showToast(message = "Название: ${b}")
-                            ll.addView(button_dynamic)
-                            //linearLayout.removeAllViews();
-                        }
+                        showListClassesType()
                     }
                 }
             }
@@ -276,22 +139,222 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
             override fun onNothingSelected(arg0: AdapterView<*>?) {
                 // TODO Auto-generated method stub
             }
-        })
+        }
         // Create an ArrayAdapter using a simple spinner layout and languages array
-        var adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languages)
-        val adapter2 = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items)
-        val adapter3 = ArrayAdapter(this, android.R.layout.simple_spinner_item, list_of_items2)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listSpinnerGroup)
+        val adapter2 = ArrayAdapter(this, android.R.layout.simple_spinner_item, listSpinnerSubject)
+        val adapter3 = ArrayAdapter(this, android.R.layout.simple_spinner_item, listSpinnerClassesType)
         // Set layout to use when the list of choices appear
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         // Set Adapter to Spinner
-        spinner?.adapter = adapter
-        spinner2?.adapter = adapter2
-        spinner3?.adapter = adapter3
+        spinnerGroup?.adapter = adapter
+        spinnerSubject?.adapter = adapter2
+        spinnerClassType?.adapter = adapter3
 
     }
 
+    private fun showJournal(id_journal: Long) {
+        writeMode = false
+        markInstrumentStudyClass = 0L
+        markInstrumentStudyTask = 0L
+        when(id_journal){
+            0L -> showToast(message = "Журнал не выбран!")
+            else -> {
+                showTable(id_journal)
+            }
+        }
+    }
+    @SuppressLint("InflateParams")
+    private fun showListGroupAndStudents(idJournal: Long) {
+        val ll = findViewById<LinearLayout>(R.id.layout2)
+        ll.visibility = View.VISIBLE
+        val group = db.studyGroupDAO().getStudyGroup()
+        when(group.count()) {
+            0 -> {}
+            else -> {
+                val arr: MutableList<String> = mutableListOf()
+                group.forEachIndexed{ i, gr->
+                    arr += gr.abbr
+                    val btn = Button(this@MainActivity)
+                    btn.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT )
+                    btn.text =  gr.abbr
+                    btn.setBackgroundResource(R.drawable.rec)
+                    btn.setOnClickListener {
+                        val lay = findViewById<LinearLayout>(R.id.layout3)
+                        lay.removeAllViews()
+                        val students = db.studentDAO().getStudentsByIdGroup(gr.id!!)
+                        when (students.count()) {
+                            0 -> showToast(message = "В группе $gr.abbr еще нет студентов!")
+                            else -> {
+                                val arrayAdapter: ArrayAdapter<*>
+                                val mDialogView = LayoutInflater.from(this@MainActivity)
+                                    .inflate(R.layout.list, null)
+                                val listView = mDialogView.findViewById<ListView>(R.id.list)
+
+                                val st: MutableList<String> = mutableListOf()
+                                val mapId = mutableMapOf<Int, Long>()
+                                students.forEachIndexed { index, entity ->
+                                    st += (students[index].family + " " + students[index].name + " " + students[index].patronymic)
+                                    mapId[index] = students[index].id!!.toLong()
+                                }
+                                arrayAdapter = ArrayAdapter(this@MainActivity, R.layout.item, st)
+                                listView.adapter = arrayAdapter
+                                listView.onItemClickListener =
+                                    object : AdapterView.OnItemClickListener {
+                                        override fun onItemClick(
+                                            p0: AdapterView<*>?,
+                                            p1: View?,
+                                            p2: Int,
+                                            p3: Long
+                                        ) {
+                                            this@MainActivity.idJournal = mapId[p2]!!
+                                            val menu = PopupMenu(this@MainActivity, p1)
+                                            menu.menu.apply {
+                                                add("Удалить студента").setOnMenuItemClickListener {
+                                                    val builder =
+                                                        AlertDialog.Builder(this@MainActivity)
+                                                    with(builder)
+                                                    {
+                                                        setTitle("Удаление")
+                                                        setMessage("Вы уверены, что хотите удалить?")
+                                                        setPositiveButton("Да") { dialog, id ->
+                                                            db.studentDAO()
+                                                                .deleteStudent(students[p2])
+                                                            showListGroupAndStudents(idJournal)
+                                                        }
+                                                        setNegativeButton("Нет", null)
+                                                        show()
+                                                    }
+                                                    true
+                                                }
+                                            }
+                                            menu.show()
+                                        }
+                                    }
+                                lay.addView(creatTextView(text = "Студенты группы: $gr.abbr",
+                                    w = 600,
+                                    bg = Color.WHITE,
+                                    align = View.TEXT_ALIGNMENT_CENTER))
+                                lay.addView(mDialogView)
+                            }
+                        }
+                    }
+                    if(i==0)
+                        btn.performClick()
+                    ll.addView(btn)
+                }
+
+            }
+        }
+    }
+    private fun showListSubjectAndJournals() {
+        val ll = findViewById<LinearLayout>(R.id.layout2)
+        ll.visibility = View.VISIBLE
+        val subject = db.subjectDAO().getSubject()
+        when(subject.count()) {
+            0 -> showToast(message = "Нет дисциплин!")
+            else -> {
+                val arr: MutableList<String> = mutableListOf()
+                subject.forEachIndexed{i, s->
+                    arr += s.abbr
+                    val btn = Button(this@MainActivity)
+                    btn.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT )
+                    btn.text = arr[i]
+                    btn.setBackgroundResource(R.drawable.rec)
+                    btn.setOnClickListener {
+                        val lay = findViewById<LinearLayout>(R.id.layout3)
+                        lay.removeAllViews()
+                        val journal = db.journalDAO().getJournalBySubjectId(s.id!!)
+                        when (journal.count()) {
+                            0 -> showToast(message = "Журналы по $s.abbr еще не созданы!")
+                            else -> {
+                                val arrayAdapter: ArrayAdapter<*>
+                                val mDialogView = LayoutInflater.from(this@MainActivity)
+                                    .inflate(R.layout.list, null)
+                                val listView = mDialogView.findViewById<ListView>(R.id.list)
+
+                                val gr: MutableList<String> = mutableListOf()
+                                val mapId = mutableMapOf<Int, Long>()
+                                journal.forEachIndexed { index, entity ->
+                                    gr += journal[index].note
+                                    mapId[index] = journal[index].id!!.toLong()
+                                }
+                                arrayAdapter = ArrayAdapter(this@MainActivity, R.layout.item, gr)
+                                listView.adapter = arrayAdapter
+                                listView.onItemClickListener =
+                                    object : AdapterView.OnItemClickListener {
+                                        override fun onItemClick(
+                                            p0: AdapterView<*>?,
+                                            p1: View?,
+                                            p2: Int,
+                                            p3: Long
+                                        ) {
+                                            idJournal = mapId[p2]!!
+                                            val menu = PopupMenu(this@MainActivity, p1)
+                                            menu.menu.apply {
+                                                add("Открыть журнал").setOnMenuItemClickListener {
+                                                    showJournal(idJournal)
+                                                    true
+                                                }
+                                                add("Добавить в журнал группу").setOnMenuItemClickListener {
+                                                    addGroupInJournal(idJournal)
+                                                    true
+                                                }
+
+                                                add("Удалить журнал").setOnMenuItemClickListener {
+                                                    val builder =
+                                                        AlertDialog.Builder(this@MainActivity)
+                                                    with(builder)
+                                                    {
+                                                        setTitle("Удаление")
+                                                        setMessage("Вы уверены, что хотите удалить?")
+                                                        setPositiveButton("Да") { dialog, id ->
+                                                            db.journalDAO()
+                                                                .deleteJournal(journal[p2])
+                                                            spinnerSubject?.setSelection(3)
+                                                        }
+                                                        setNegativeButton("Нет", null)
+                                                        show()
+                                                    }
+                                                    true
+                                                }
+                                            }
+                                            menu.show()
+                                        }
+                                    }
+                                lay.addView(creatTextView(text = "Журналы по $s.abbr",
+                                    w = 600,
+                                    bg = Color.WHITE,
+                                    align = View.TEXT_ALIGNMENT_CENTER))
+                                lay.addView(mDialogView)
+                            }
+                        }
+                    }
+                    if(i==0)
+                        btn.performClick()
+                    ll.addView(btn)
+                }
+
+            }
+        }
+    }
+    private fun showListClassesType() {
+        val ll = findViewById<LinearLayout>(R.id.layout2)
+        ll.visibility = View.VISIBLE
+        val type = db.taskDAO().getTaskType()
+        val num = db.taskDAO().getTaskType().count()
+        val arr: MutableList<String> = mutableListOf()
+        for(i in 0 until num){
+            arr += type[i].abbr
+            val btn = Button(this@MainActivity)
+            btn.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            btn.text = arr[i]
+            btn.setBackgroundResource(R.drawable.rec)
+            ll.addView(btn)
+        }
+    }
     fun creatTextView(
         text: String,
         w: Int = 100, h: Int = 100,
@@ -299,9 +362,10 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         visible: Int = View.VISIBLE,
         align: Int = View.TEXT_ALIGNMENT_INHERIT,
         ts: Double = 14.0,
-        lp: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT)
+        lp: LinearLayout.LayoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.MATCH_PARENT),
     ): TextView{
-        var view = TextView(this)  as TextView
+        val view = TextView(this)
         view.text = text
         view.width = w
         view.height = h
@@ -314,62 +378,83 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         view.layoutParams = lp
         return  view
     }
-    val GOLD: Int = Color.rgb(255, 215, 0)
+    private val gold: Int = Color.rgb(255, 215, 0)
 
-    fun showTable(idJournal: Long) {
-        var wHead = 300
-        var hHead = 220
-        var wMain = 300
-        var hMain = 100
-        var wadd = 60
-        var studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
-        var studentsFlow = db.studentDAO().getStudentGroupByJournal(idJournal)
+    private fun showTable(idJournal: Long) {
+        val wHead = 300
+        val hHead = 220
+        val wMain = 300
+        val hMain = 100
+        val wadd = 100
+        val studyGroupsFlow = db.studyGroupDAO().getStudyGroupinSub(idJournal)
+        val studentsFlow = db.studentDAO().getStudentGroupByJournal(idJournal)
         val max_size: Int = (studentsFlow.maxByOrNull{it.toString().length}).toString().length*24
 
         val recView = LinearLayout(this@MainActivity)
         recView.orientation = LinearLayout.VERTICAL
         recView.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        recView.setPadding(15,10,15,20)
         recView.setBackgroundColor(Color.LTGRAY)
 
         for(gr in studyGroupsFlow){
-            drawGroupLine(line=recView, group = gr, hHead = 150, bg=GOLD)
-            val classes = db.studyClassDAO().getStudyClassByIdJournal(id_journal)
-            val tasks = db.taskDAO().getTaskByIdJournal(id_journal)
+            drawGroupLine(line=recView, group = gr, hHead = 150, bg=gold)
+            val classes = db.studyClassDAO().getStudyClassByIdJournal(this.idJournal)
+            val tasks = db.taskDAO().getTaskByIdJournal(this.idJournal)
             drawHeaderLine(line=recView, size_fio_column=max_size, bg=Color.rgb(244, 164, 96), h=hHead, w=wHead, wadd = wadd, classes=classes, tasks=tasks)
             var ni = 0
             studentsFlow.filter { st -> st.id_group == gr.id }.forEachIndexed { i, item->
                 ni++
                 val mainLine = LinearLayout(this)
                 mainLine.orientation = LinearLayout.HORIZONTAL
-                var lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 lp.setMargins(3,3,3,3)
                 mainLine.layoutParams = lp
-                var lineColor = when(i%2){
+                val lineColor = when(i%2){
                     0-> Color.rgb(255, 245, 238)
                     else -> Color.rgb(245, 222, 179)
                 }
                 mainLine.addView(creatTextView(text =ni.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))
                 mainLine.addView(creatTextView(text =item.id.toString(), bg = lineColor, align = View.TEXT_ALIGNMENT_CENTER))//id студента
                 mainLine.addView(creatTextView(text =item.toString(), w =max_size, bg = lineColor))//ФИО
+
+                val tvHours = creatTextView(text = "", align = View.TEXT_ALIGNMENT_CENTER,w = wMain, bg = lineColor)
+                tvHours.setOnClickListener {
+                    val classes = db.studyClassDAO().getStudyClassByIdJournal(this.idJournal).count()
+                    val studentNotPass = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(
+                        this.idJournal, item.id!!).
+                    filter { st-> st.attendMark.id_study_mark_type != 3L}
+                    tvHours.text = "$studentNotPass.count()/$classes"
+                }
+                tvHours.performClick()
                 //Столбцы занятий
-                val studyAttendMark = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(id_journal, item.id!!)
-                drawColumnsWithClass(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain ,classes=classes, studyAttendMark=studyAttendMark)
-                mainLine.addView(creatTextView(text = "|", w = wadd, bg=GOLD, align =4))//Пустой столбец
+                drawColumnsWithClass(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain ,student=item, classes=classes, tvHours=tvHours)
+                mainLine.addView(creatTextView(text = "|", w = wadd, bg=gold, align =4))//Пустой столбец
+
+                val tvDopusk = creatTextView(text = "Допуск", align = View.TEXT_ALIGNMENT_CENTER,w = wMain, bg = lineColor)
+                tvDopusk.setOnClickListener {
+                    val tasks = db.taskDAO().getTaskByIdJournal(this.idJournal).count()
+                    val taskDone = db.studyTaskMarkDAO().getStudyTaskMarksByIdJournalAndIdStudent(
+                        this.idJournal, item.id!!).count()
+                    tvDopusk.text = if(tasks == taskDone) "Да" else "Нет"
+                }
+                tvDopusk.performClick()
                 //Столбец с работами
-                val studyTaskMark = db.studyTaskMarkDAO().getStudyTaskMarksByIdJournalAndIdStudent(id_journal, item.id!!)
-                drawColumnsWithWork(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain,tasks=tasks, studyTaskMark=studyTaskMark)
-                mainLine.addView(creatTextView(text = "|", w = wadd, bg=GOLD, align =4))//Пустой столбец
+                drawColumnsWithWork(mainLine=mainLine, size_fio_column=max_size, bg = lineColor, w=wMain, h=hMain,student=item,tasks=tasks,tvDopusk=tvDopusk)
+                mainLine.addView(creatTextView(text = "|", w = wadd, bg=gold, align =4))//Пустой столбец
+                mainLine.addView(tvHours)
+                mainLine.addView(tvDopusk)
                 recView.addView(mainLine)
+
         }
         }
 
         val horizScrollView = HorizontalScrollView(this@MainActivity)
         horizScrollView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        horizScrollView.requestLayout();
+        horizScrollView.requestLayout()
 
         val scrollView = ScrollView(this@MainActivity)
         scrollView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        scrollView.requestLayout();
+        scrollView.requestLayout()
 
         scrollView.addView(recView)
         horizScrollView.addView(scrollView)
@@ -380,9 +465,9 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         line: LinearLayout,
         size_fio_column: Int,
         bg: Int = Color.WHITE,
-        h: Int,
-        w: Int,
-        wadd: Int,
+        h: Int = 220,
+        w: Int = 300,
+        wadd: Int = 100,
         classes: List<StudyClassWithInfo>,
         tasks: List<StudyTaskWithInfo>,
     ) {
@@ -396,30 +481,82 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         classes.forEachIndexed{ i, cl ->
             val type = cl.type.abbr
             val detail = cl.cl
-            headLine.addView(creatTextView(
+            val tvClass = creatTextView(
                 text = ""+type+"\n"+detail.data+"\n"+(detail.theme?:"Темы нет"),
-                bg=bg, h = h, w = w, align = View.TEXT_ALIGNMENT_CENTER))
+                bg=bg, h = h, w = w, align = View.TEXT_ALIGNMENT_CENTER)
+            tvClass.setOnClickListener {
+                val menu = PopupMenu(this@MainActivity, tvClass)
+                menu.menu.apply {
+                    add("Удалить занятие").setOnMenuItemClickListener {
+                        val builder = AlertDialog.Builder(this@MainActivity)
+                        with(builder)
+                        {
+                            setTitle("Удаление")
+                            setMessage("Вы уверены, что хотите удалить?")
+                            setPositiveButton("Да") { dialog, id ->
+                                db.studyClassDAO().deleteStudyClass(cl.cl)
+                                showJournal(idJournal)
+                            }
+                            setNegativeButton("Нет", null)
+                            show()
+                        }
+                        true
+                    }
+                }
+                menu.show()
+            }
+            headLine.addView(tvClass)
+
         }
         //Колонка добавления занятия
-        val addSC = creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4)!!
+        val addSC = creatTextView(text = "+", h =h, w = wadd, bg=gold, align =4)
         addSC.setOnClickListener{view->
-            addStudyClass(id_journ = id_journal)
+            addStudyClass(id_journ = idJournal)
         }
         headLine.addView(addSC)
         tasks.forEachIndexed{ i, task ->
             val type = task.type.abbr
             val num_task = task.task.id_cur_num_task
-            headLine.addView(creatTextView(
-                text = ""+type+" "+num_task.toString(), bg = bg,
+            val count_task = db.taskDAO().getLastNumberTaskByTypeInJournal(idJournal,task.task.id_task_type)
+            val text =when(num_task){
+                1L->if(count_task==1L) "" else "1"
+                else -> num_task.toString()
+            }
+            val tvTasks = creatTextView(
+                text = "$type $text", bg = bg,
                 h = h,
-                w = w, align = View.TEXT_ALIGNMENT_CENTER))
+                w = w, align = View.TEXT_ALIGNMENT_CENTER)
+            tvTasks.setOnClickListener {
+                val menu = PopupMenu(this@MainActivity, tvTasks)
+                menu.menu.apply {
+                    add("Удалить задание").setOnMenuItemClickListener {
+                        val builder = AlertDialog.Builder(this@MainActivity)
+                        with(builder)
+                        {
+                            setTitle("Удаление")
+                            setMessage("Вы уверены, что хотите удалить?")
+                            setPositiveButton("Да") { dialog, id ->
+                                db.taskDAO().deleteTask(task.task)
+                                showJournal(idJournal)
+                            }
+                            setNegativeButton("Нет", null)
+                            show()
+                        }
+                        true
+                    }
+                }
+                menu.show()
+            }
+            headLine.addView(tvTasks)
         }
         //Колонка добавления задания
-        val addST = creatTextView(text = "+", h =h, w = wadd, bg=GOLD, align =4)!!
+        val addST = creatTextView(text = "+", h = h, w = wadd, bg = gold, align = 4)
         addST.setOnClickListener{view->
-            addStudyClass(id_journ = id_journal)
+            addStudyTask(id_journ = idJournal)
         }
         headLine.addView(addST)
+        headLine.addView(creatTextView(text = "Ак. часы", h = h, w = w, bg = bg, align = 4))
+        headLine.addView(creatTextView(text = "Допуск", h = h, w = w, bg = bg, align = 4))
         line.addView(headLine)
     }
 
@@ -427,15 +564,17 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         mainLine: LinearLayout,
         size_fio_column: Int,
         bg: Int = Color.WHITE,
-        w: Int,
-        h: Int,
+        h: Int = 220,
+        w: Int = 300,
+        student: Student,
         classes: List<StudyClassWithInfo>,
-        studyAttendMark: List<StudyAttendMarkWithInfo>,
+        tvHours: TextView
     ) {
-        classes.forEachIndexed{ i, cl ->
-            val sam = studyAttendMark.filter { st->st.attendMark.id_study_class!! == cl.cl.id!!}
-            var text: String = when(sam.count()){
-                0 -> "Н"
+        classes.forEach{ cl ->
+            var sam = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(idJournal, student.id!!).
+            filter { st-> st.attendMark.id_study_class == cl.cl.id!!}
+            val text: String = when(sam.count()){
+                0 -> ""
                 else -> sam[0].attendMark.mark
             }
 
@@ -443,22 +582,123 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 text = text, align = View.TEXT_ALIGNMENT_CENTER,
                 w = w, bg = bg)
             tv.setOnClickListener {
-                //tv.setBackgroundColor(Color.RED)
+                if(writeMode!!){
+                    sam = db.studyAttendMarkDAO().getStudyAttendMarkByIdJournalAndIdStudent(idJournal,
+                        student.id).  filter { st-> st.attendMark.id_study_class == cl.cl.id!!}
+                    when(markInstrumentStudyClass){
+                        0L -> {
+                            if(sam.count() != 0){
+                                val menu = PopupMenu(this@MainActivity, tv)
+                                menu.menu.add("Удалить отметку").setOnMenuItemClickListener {
+                                    val res = db.studyAttendMarkDAO().deleteStudyAttendMark(sam[0].attendMark)
+                                    tv.text =""
+                                    tvHours.performClick()
+                                    true
+                                }
+                                menu.show()
+                            }
+                        }
+                        1L -> {
+                            tv.text="."
+                            if(sam.count() != 0){
+                                sam[0].attendMark.id_study_mark_type = markInstrumentStudyClass
+                                sam[0].attendMark.mark = "."
+                                db.studyAttendMarkDAO().updateStudyAttendMark(sam[0].attendMark)
+                            } else {
+                                db.studyAttendMarkDAO().insertStudyAttendMark(StudyAttendMark(
+                                    id_study_class = cl.cl.id!!,
+                                    id_student = student.id,
+                                    id_study_mark_type = markInstrumentStudyClass,
+                                    mark = "."
+                                ))
+                            }
+                        }
+                        2L -> {
+                            val dialog = LayoutInflater.from(this).inflate(R.layout.addmark, null)
+                            val etMark: EditText = dialog.findViewById(R.id.etMark)
+                            val radioGroup: RadioGroup = dialog.findViewById(R.id.radioGroup)
+                            val btCancl: Button = dialog.findViewById(R.id.declineb)
+                            val btDone: Button = dialog.findViewById(R.id.saveb)
+                            radioGroup.setOnCheckedChangeListener{ group, checkedId ->
+                                val rb = dialog.findViewById<RadioButton>(checkedId)
+                                etMark.setText(rb.text)
+                            }
+                            radioGroup.check(R.id.rb60)
+
+                            val mBuilder = AlertDialog.Builder(this).setView(dialog)
+                            val mAlertDialog = mBuilder.show()
+                            btDone.setOnClickListener {
+                                mAlertDialog.dismiss()
+                                tv.text=etMark.text
+                                if(sam.count() != 0){
+                                    sam[0].attendMark.id_study_mark_type = markInstrumentStudyClass
+                                    sam[0].attendMark.mark = etMark.text.toString()
+                                    db.studyAttendMarkDAO().updateStudyAttendMark(sam[0].attendMark)
+                                } else {
+                                    db.studyAttendMarkDAO().insertStudyAttendMark(StudyAttendMark(
+                                        id_study_class = cl.cl.id!!,
+                                        id_student = student.id,
+                                        id_study_mark_type = markInstrumentStudyClass,
+                                        mark = etMark.text.toString()
+                                    ))
+                                }
+                            }
+                            btCancl.setOnClickListener {
+                                mAlertDialog.dismiss()
+                            }
+                        }
+                        3L -> {
+                            val symbol = when(symbolPass){
+                                0 -> "Н"
+                                else -> "Б"
+                            }
+                            tv.text=symbol
+                            if(sam.count() != 0){
+                                sam[0].attendMark.id_study_mark_type = markInstrumentStudyClass
+                                sam[0].attendMark.mark = symbol
+                                db.studyAttendMarkDAO().updateStudyAttendMark(sam[0].attendMark)
+                            } else {
+                                db.studyAttendMarkDAO().insertStudyAttendMark(StudyAttendMark(
+                                    id_study_class = cl.cl.id!!,
+                                    id_student = student.id,
+                                    id_study_mark_type = markInstrumentStudyClass,
+                                    mark = symbol
+                                ))
+                            }
+                        }
+
+                    }
+                    tvHours.performClick()
+                }
                 true
             }
             tv.setOnLongClickListener {
                 val menu = PopupMenu(this@MainActivity, tv)
-                menu.menu.apply {
-                    add("Rename").setOnMenuItemClickListener {
-                        true
-                    }
-                    add("change context").setOnMenuItemClickListener {
-
-                        true
-                    }
-
-                    add("delete").setOnMenuItemClickListener {
-
+                menu.menu.add(if(!writeMode!!) "Режим записи - Вкл" else "Режим записи - Выкл").setOnMenuItemClickListener {
+                    writeMode = !writeMode!!
+                    true
+                }
+                val types = db.studyAttendMarkDAO().getAttendMarkType()
+                types.forEach{ type ->
+                    val isCur = type.id!!.toLong()==markInstrumentStudyClass
+                    menu.menu.add(if(!isCur) "Отметка: $type.title" else "Сбросить отметку").setOnMenuItemClickListener {
+                        if(isCur){
+                            markInstrumentStudyClass =  0
+                        } else {
+                            markInstrumentStudyClass = type.id
+                            if(type.id==3L){
+                                val submenu = PopupMenu(this@MainActivity, tv)
+                                submenu.menu.add("Пропуск - Н").setOnMenuItemClickListener {
+                                    symbolPass = 0
+                                    true
+                                }
+                                submenu.menu.add("Пропуск - Б").setOnMenuItemClickListener {
+                                    symbolPass = 1
+                                    true
+                                }
+                                submenu.show()
+                            }
+                        }
                         true
                     }
                 }
@@ -475,38 +715,108 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         bg: Int = Color.WHITE,
         w: Int,
         h: Int,
+        student: Student,
         tasks: List<StudyTaskWithInfo>,
-        studyTaskMark: List<StudyTaskMarkWithInfo>,
+        tvDopusk: TextView
     ) {
-
         tasks.forEachIndexed{ i, task ->
-            val stm = studyTaskMark.filter { st->st.taskMark.id_task!! == task.task.id!!}
-            var text: String = when(stm.count()){
+            var stm = db.studyTaskMarkDAO().getStudyTaskMarksByIdJournalAndIdStudent(idJournal, student.id!!).
+            filter { st-> st.taskMark.id_task == task.task.id!!}
+            val text: String = when(stm.count()){
                 0 -> ""
                 else -> stm[0].taskMark.mark
             }
 
             val tv = creatTextView(text = text, align = View.TEXT_ALIGNMENT_CENTER, w = w, bg = bg)
             tv.setOnClickListener {
-                //tv.setBackgroundColor(Color.GREEN)
+                if(writeMode!!){
+                    stm = db.studyTaskMarkDAO().getStudyTaskMarksByIdJournalAndIdStudent(idJournal,
+                        student.id).
+                    filter { st-> st.taskMark.id_task == task.task.id!!}
+                    when(markInstrumentStudyTask){
+                        0L -> {
+                            if(stm.count() != 0){
+                                val menu = PopupMenu(this@MainActivity, tv)
+                                menu.menu.add("Удалить отметку").setOnMenuItemClickListener {
+                                    db.studyTaskMarkDAO().deleteStudyTaskMark(stm[0].taskMark)
+                                    tv.text =""
+                                    tvDopusk.performClick()
+                                    true
+                                }
+                                menu.show()
+                            }
+                        }
+                        1L -> {
+                            tv.text="✓"
+                            if(stm.count() != 0){
+                                stm[0].taskMark.id_task_mark_type = markInstrumentStudyTask
+                                stm[0].taskMark.mark = "✓"
+                                db.studyTaskMarkDAO().updateStudyTaskMark(stm[0].taskMark)
+                            } else {
+                                db.studyTaskMarkDAO().insertStudyTaskMark(StudyTaskMark(
+                                    id_task = task.task.id!!,
+                                    id_student = student.id,
+                                    id_task_mark_type = markInstrumentStudyTask,
+                                    mark = "✓"
+                                ))
+                            }
+                        }
+                        2L -> {
+                            val dialog = LayoutInflater.from(this).inflate(R.layout.addmark, null)
+                            val etMark: EditText = dialog.findViewById(R.id.etMark)
+                            val radioGroup: RadioGroup = dialog.findViewById(R.id.radioGroup)
+                            val btCancl: Button = dialog.findViewById(R.id.declineb)
+                            val btDone: Button = dialog.findViewById(R.id.saveb)
+                            radioGroup.setOnCheckedChangeListener{ group, checkedId ->
+                                val rb = dialog.findViewById<RadioButton>(checkedId)
+                                etMark.setText(rb.text)
+                            }
+                            radioGroup.check(R.id.rb60)
+
+                            val mBuilder = AlertDialog.Builder(this).setView(dialog)
+                            val mAlertDialog = mBuilder.show()
+                            btDone.setOnClickListener {
+                                mAlertDialog.dismiss()
+                                tv.text=etMark.text
+                                if(stm.count() != 0){
+                                    stm[0].taskMark.id_task_mark_type = markInstrumentStudyTask
+                                    stm[0].taskMark.mark = etMark.text.toString()
+                                    db.studyTaskMarkDAO().updateStudyTaskMark(stm[0].taskMark)
+                                } else {
+                                    db.studyTaskMarkDAO().insertStudyTaskMark(StudyTaskMark(
+                                        id_task = task.task.id!!,
+                                        id_student = student.id,
+                                        id_task_mark_type = markInstrumentStudyTask,
+                                        mark = etMark.text.toString()
+                                    ))
+                                }
+                            }
+                            btCancl.setOnClickListener {
+                                mAlertDialog.dismiss()
+                            }
+
+                        }
+
+                    }
+                    tvDopusk.performClick()
+                }
                 true
             }
             tv.setOnLongClickListener {
                 val menu = PopupMenu(this@MainActivity, tv)
-                menu.menu.apply {
-                    add("Rename2").setOnMenuItemClickListener {
-                        true
-                    }
-                    add("change2").setOnMenuItemClickListener {
-
-                        true
-                    }
-
-                    add("delete2").setOnMenuItemClickListener {
-
+                menu.menu.add(if(!writeMode!!) "Режим записи - Вкл" else "Режим записи - Выкл").setOnMenuItemClickListener {
+                    writeMode = !writeMode!!
+                    true
+                }
+                val types = db.studyTaskMarkDAO().getTaskMarkType()
+                types.forEach{ type ->
+                    val isCur = type.id!!.toLong()==markInstrumentStudyTask
+                    menu.menu.add(if(!isCur) "Отметка: $type.title" else "Сбросить отметку").setOnMenuItemClickListener {
+                        markInstrumentStudyTask = if(isCur) 0 else type.id
                         true
                     }
                 }
+
                 menu.show()
                 true
             }
@@ -544,25 +854,22 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 val findbtn: Button = mDialogView.findViewById(R.id.dialogfrom)
                 val xmlbtn: Button = mDialogView.findViewById(R.id.dialogxml)//dialogSave
 
-                //login button click of custom layout
-                var students = mutableListOf<Student>()
+                val students = mutableListOf<Student>()
 
                 btDone.setOnClickListener {
-                    //dismiss dialog
                     mAlertDialog.dismiss()
                     val name = n.text.toString()
                     val surname = sur.text.toString()
                     val middlename = mid.text.toString()
                     val groupe = grou.text.toString()
-                    when (id_journal) {
+                    when (idJournal) {
                         0L -> showToast(message = "Не выбран журнал!")
                         else -> {
                             if (name.trim().isNotEmpty() && surname.trim().isNotEmpty() &&
                                 middlename.trim().isNotEmpty() && groupe.trim().isNotEmpty()
                             ) {
                                 val stgroup = StudyGroup(title = groupe, abbr = groupe)
-                                val idExist = db.studyGroupDAO().isStudyGroupExist(stgroup.abbr)
-                                val idgroup = when (idExist) {
+                                val idgroup = when (val idExist = db.studyGroupDAO().isStudyGroupExist(stgroup.abbr)) {
                                     0L -> {
                                         db.studyGroupDAO().insertStudyGroup(stgroup)
                                     }
@@ -571,10 +878,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                     }
                                 }
 
-                                showToast(message = "Есть! ${idgroup}, ${id_journal}")
-                                var d = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = id_journal, id_group = idgroup))
-                                showToast(message = "Добавили в flow!")
-                                showToast(message = "Есть! ${idgroup}")
+                                val d = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = idJournal, id_group = idgroup))
                                 val student = Student(
                                     family = surname,
                                     name = name,
@@ -591,7 +895,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                                     students.add(student)
                                 }
                                 val idstudents = db.studentDAO().insertStudents(students)
-                                showToast(message = "Имя: ${name}, фамилия: ${surname}, отчество: ${middlename}, группа: ${groupe}")
+                                showToast(message = "Имя: $name, фамилия: $surname, отчество: $middlename, группа: $groupe")
                             } else showToast(message = "Заполните все поля!")
                         }
                     }
@@ -608,7 +912,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     mAlertDialog.dismiss()
                 }
                 xmlbtn.setOnClickListener {
-                    ReadXml(mDialogView)
+                    readXml(mDialogView)
                     mAlertDialog.dismiss()
                 }
             }
@@ -622,12 +926,11 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     val word = w.text.toString()
                     val fullword = ww.text.toString()
                     if(word.trim().isNotEmpty() && fullword.trim().isNotEmpty()) {
-                        var sub = Subject(title = fullword, abbr = word)
-                        val idExist = db.subjectDAO().isSubjectExist(fullword, word)
-                        when(idExist){
+                        val sub = Subject(title = fullword, abbr = word)
+                        when(db.subjectDAO().isSubjectExist(fullword, word)){
                             0L -> {
                                 if(db.subjectDAO().insertSubject(sub)!=0L)
-                                    showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
+                                    showToast(message = "Сокращенное: $word, полное название: $fullword")
                             }
                             else -> {
                                 showToast(message="Такая дисциплина существует")
@@ -635,7 +938,7 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                         }
                     }
                     else showToast(message = "Заполните все поля!")
-                    spinner2?.setSelection(3)
+                    spinnerSubject?.setSelection(3)
                 }
                 btCancl.setOnClickListener {
                     mAlertDialog.dismiss()
@@ -651,27 +954,24 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     val word = w.text.toString()
                     val fullword = ww.text.toString()
                     if(word.trim().isNotEmpty() && fullword.trim().isNotEmpty()) {
-                        val ex = db.taskDAO().isTaskTypeExist("Лабораторная работа", "ЛР")
-                        when (ex) {
+                        when (db.taskDAO().isTaskTypeExist("Лабораторная работа", "ЛР")) {
                             0L -> DBJournalHelper.addDAO()
                             else -> showToast(message = "Есть!")
                         }
                         val type = TaskType(title = fullword, abbr = word)
-                        val idExist = db.taskDAO().isTaskTypeExist(fullword, word)
-                        val idgroup = when (idExist) {
+                        val idgroup = when (val idExist = db.taskDAO().isTaskTypeExist(fullword, word)) {
                             0L -> db.taskDAO().insertTaskType(type)
                             else -> {
                                 idExist
                             }
                         }
-                        showToast(message = "Сокращенное: ${word}, полное название: ${fullword}")
+                        showToast(message = "Сокращенное: $word, полное название: $fullword")
                     }
                     else showToast(message = "Заполните все поля!")
-                    spinner3?.setSelection(2)
+                    spinnerClassType?.setSelection(2)
                 }
                 btCancl.setOnClickListener {
                     mAlertDialog.dismiss()
-                    //var ll : LinearLayout = mDialogView.findViewById(R.id.layout2)
                 }
             }
             4-> {
@@ -679,9 +979,9 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 val sp: Spinner = mDialogView.findViewById(R.id.spinnerSubject)
                 val save: Button = mDialogView.findViewById(R.id.dialogSave)
                 val btCancl: Button = mDialogView.findViewById(R.id.dialogCancel)
-                var gr: MutableList<String> = mutableListOf()
-                var grr = db.subjectDAO().getSubject()
-                var mapId = mutableMapOf<Int, Long>()
+                val gr: MutableList<String> = mutableListOf()
+                val grr = db.subjectDAO().getSubject()
+                val mapId = mutableMapOf<Int, Long>()
                 grr.forEachIndexed{index, entity->
                     gr += grr[index].abbr
                     mapId[index] = grr[index].id!!.toLong()
@@ -689,9 +989,9 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                 val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, gr)
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 sp.adapter = adapter
-                sp?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+                sp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                        spinner3?.setSelection(0)
+                        spinnerClassType?.setSelection(0)
                         tv.text = ""
                         tv.hint = ""+grr[position].abbr+": + текст..."
                     }
@@ -699,20 +999,20 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
                     override fun onNothingSelected(arg0: AdapterView<*>?) {
                         // TODO Auto-generated method stub
                     }
-                })
+                }
                 save.setOnClickListener {
                     mAlertDialog.dismiss()
                     val note = tv.text.toString()
-                    var selectedItem = sp.selectedItemPosition
+                    val selectedItem = sp.selectedItemPosition
                     val abbr = grr[selectedItem].abbr
                     val id_subject = mapId[selectedItem]!!
                     if(note.trim().isNotEmpty() && sp.count != 0) {
-                        var j = Journal(id_subject = id_subject, note = "${abbr}: ${note}")
-                        var insId =db.journalDAO().insertJournal(j)
-                        showToast(message = "Добавлен журнал по: ${abbr} с id: ${insId}")
+                        val j = Journal(id_subject = id_subject, note = "$abbr: $note")
+                        val insId =db.journalDAO().insertJournal(j)
+                        showToast(message = "Добавлен журнал по: $abbr с id: $insId")
                     }
                     else showToast(message = "Заполните все поля!")
-                    spinner2?.setSelection(3)
+                    spinnerSubject?.setSelection(3)
                 }
                 btCancl.setOnClickListener {
                     mAlertDialog.dismiss()
@@ -722,24 +1022,20 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
 
     }
 
-    fun clearLayout(){
-        var lay2 = findViewById<LinearLayout>(R.id.layout2)
-        lay2.removeAllViews()
+    private fun clearLayout(){
+        val lay2 = findViewById<LinearLayout>(R.id.layout2).removeAllViews()
         findViewById<LinearLayout>(R.id.layout3).removeAllViews()
         setInvisibleView()
     }
-    fun setInvisibleView(){
-        var lay2 = findViewById<LinearLayout>(R.id.layout2)
+    private fun setInvisibleView(){
+        val lay2 = findViewById<LinearLayout>(R.id.layout2)
         lay2.visibility = View.INVISIBLE
-        findViewById<LinearLayout>(R.id.linearLayoutButtons).forEach { view ->
-            view.visibility = View.INVISIBLE
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode === RESULT_OK && data != null) {
-            val filePath = data?.data
+            val filePath = data.data
             path = filePath
             when (requestCode) {
                 //Чтение xls
@@ -755,15 +1051,11 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         }
     }
 
-    fun ReadXml(view: View){
+    private fun readXml(view: View){
         if (path.toString().endsWith("xls")) {
-            ParseXML(context = this).readFromExcelFile(db, path!!);
+            ParseXML(context = this).readFromExcelFile(db, path!!)
         }
 
-    }
-
-    inline fun <reified T> toArray(list: List<*>): Array<T> {
-        return (list as List<T>).toTypedArray()
     }
 
     override fun onStop() {
@@ -775,69 +1067,53 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         db.close()
     }
 
-    fun convertDateToLong(date: String): Long {
-        val df = SimpleDateFormat("yyyy-MM-dd")
-        return df.parse(date).time
-    }
-
-    fun basicAlert(view: View){
-        val builder = AlertDialog.Builder(this)
-        with(builder)
-        {
-            setTitle("Добавить вид занятия")
-            setMessage("We have a message")
-            setPositiveButton("Сохранить", DialogInterface.OnClickListener(function = positiveButtonClick))
-            setNegativeButton("Отмена", negativeButtonClick)
-            //setNeutralButton("Maybe", neutralButtonClick)
-            show()
-        }
-    }
-    fun hasPermissionsWithStorage(): Boolean{
-        if (ActivityCompat.checkSelfPermission(this,  Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
+    private fun hasPermissionsWithStorage(): Boolean{
+        return if (ActivityCompat.checkSelfPermission(this,  Manifest.permission.MANAGE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this,  Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ){
             val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.MANAGE_EXTERNAL_STORAGE)
             ActivityCompat.requestPermissions(this, permissions,0)
-            return false
+            false
         } else {
-            return true
+            true
         }
     }
     
-    fun addStudyClass(id_journ: Long){
+    private fun addStudyClass(id_journ: Long){
         when (id_journ) {
             0L -> showToast(message = "Не выбран журнал!")
             else -> {
                 val dialog = LayoutInflater.from(this).inflate(R.layout.addstudyclass, null)
-                val title: TextView = dialog.findViewById(R.id.etTaskTitle)
-                val sp: Spinner = dialog.findViewById(R.id.spinnertasktype)
-                var gr: MutableList<String> = mutableListOf()
-                var grr = db.studyClassDAO().getStudyClassType()
-                var typesID = mutableMapOf<Int, Long>()
+                val title: TextView = dialog.findViewById(R.id.etClassTitle)
+                val sp: Spinner = dialog.findViewById(R.id.spinnerclasstype)
+                val btCancl: Button = dialog.findViewById(R.id.declineb)
+                val btDone: Button = dialog.findViewById(R.id.saveb)
+                val mBuilder = AlertDialog.Builder(this).setView(dialog)
+                val gr: MutableList<String> = mutableListOf()
+                val grr = db.studyClassDAO().getStudyClassType()
+                val typesID = mutableMapOf<Int, Long>()
                 grr.forEachIndexed{index, entity->
-                    gr += grr[index].abbr
-                    typesID[index] = grr[index].id!!.toLong()
+                    gr += entity.abbr
+                    typesID[index] = entity.id!!.toLong()
                 }
                 val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, gr)
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 sp.adapter = adapter
                 val calendar = Calendar.getInstance()
-                var calendarView: CalendarView = dialog.findViewById(R.id.calendarView)
-                calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+                val calendarView: CalendarView = dialog.findViewById(R.id.calendarView)
+                calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
                     calendar.set(year,month,dayOfMonth)
                     calendarView.date = calendar.timeInMillis
                     val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM)
                     val da=dateFormatter.format(calendar.time)
                 }
-                val btCancl: Button = dialog.findViewById(R.id.declineb)
-                val btDone: Button = dialog.findViewById(R.id.saveb)
-                val mBuilder = AlertDialog.Builder(this).setView(dialog)
+
                 val mAlertDialog = mBuilder.show()
                 btDone.setOnClickListener {
                     mAlertDialog.dismiss()
                     val theme = title.text.toString()
-                    val id_study_class_type = typesID[spinner?.selectedItemPosition]!!
-                    var d = db.studyClassDAO().insertStudyClass(StudyClass(data = Date(calendar.time.time),theme=theme, id_study_class_type = id_study_class_type, id_journal = id_journ))
-                    spinner?.setSelection(2)
+                    val id_study_class_type = typesID[spinnerGroup?.selectedItemPosition]!!
+                    val d = db.studyClassDAO().insertStudyClass(StudyClass(data = Date(calendar.time.time),theme=theme, id_study_class_type = id_study_class_type, id_journal = id_journ))
+                    showJournal(idJournal)
                 }
                 btCancl.setOnClickListener {
                     mAlertDialog.dismiss()
@@ -849,6 +1125,111 @@ class MainActivity : AppCompatActivity()//, AdapterView.OnItemSelectedListener
         }
     }
 
+    private fun addStudyTask(id_journ: Long){
+        when (id_journ) {
+            0L -> showToast(message = "Не выбран журнал!")
+            else -> {
+                val dialog = LayoutInflater.from(this).inflate(R.layout.addstudytask, null)
+                val tvTitle: TextView = dialog.findViewById(R.id.tvTaskCount)
+                val countTask: EditText = dialog.findViewById(R.id.etTaskCount)
+                val spinnerTask: Spinner = dialog.findViewById(R.id.spinnertasktype)
+                val radioGroup: RadioGroup = dialog.findViewById(R.id.radioGroup)
+                val btCancl: Button = dialog.findViewById(R.id.declineb)
+                val btDone: Button = dialog.findViewById(R.id.saveb)
+
+                val gr: MutableList<String> = mutableListOf()
+                val grr = db.taskDAO().getTaskType()
+                val typesID = mutableMapOf<Int, Long>()
+                grr.forEachIndexed{index, entity->
+                    gr += entity.abbr
+                    typesID[index] = entity.id!!.toLong()
+                }
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, gr)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinnerTask.adapter = adapter
+
+                radioGroup.setOnCheckedChangeListener{
+                    group, checkedId ->
+                    when(checkedId){
+                        R.id.rb60 ->{
+                            tvTitle.text="Одно задание"
+                            countTask.visibility = View.INVISIBLE
+                        }
+                        R.id.rbManyTask ->{
+                            tvTitle.text="Множество заданий"
+                            countTask.visibility = View.VISIBLE
+                        }
+                    }
+                }
+
+                radioGroup.check(R.id.rbOneTask)
+
+                val mBuilder = AlertDialog.Builder(this).setView(dialog)
+                val mAlertDialog = mBuilder.show()
+                btDone.setOnClickListener {
+                    mAlertDialog.dismiss()
+                    val typeTaskId = typesID[spinnerTask.selectedItemPosition]!!
+                    val lastNumThisTypeTask = db.taskDAO().getLastNumberTaskByTypeInJournal(id_journal= id_journ, id_task_type = typeTaskId)
+                    when(radioGroup.checkedRadioButtonId){
+                        R.id.rbOneTask ->{
+                            db.taskDAO().insertTask(Task(
+                                id_journal = id_journ,
+                                id_task_type = typeTaskId,
+                                id_cur_num_task = lastNumThisTypeTask+1))
+                        }
+                        R.id.rbManyTask ->{
+                            val cnt = when(countTask.text.toString()){
+                                "" -> 1
+                                else -> countTask.text.toString().toInt()
+                            }
+                            for (i in 1..cnt){
+                                db.taskDAO().insertTask(Task(
+                                    id_journal = id_journ,
+                                    id_task_type = typeTaskId,
+                                    id_cur_num_task = lastNumThisTypeTask+i))
+                            }
+
+                        }
+                    }
+                    showJournal(idJournal)
+                }
+                btCancl.setOnClickListener {
+                    mAlertDialog.dismiss()
+                }
+            }
+        }
+    }
+
+    fun addGroupInJournal(id_journ :Long){
+        when (id_journ) {
+            0L -> showToast(message = "Не выбран журнал!")
+            else -> {
+                val builder = AlertDialog.Builder(this)
+                val mDialogView = LayoutInflater.from(this).inflate(R.layout.list, null)
+                val ll = mDialogView.findViewById<ListView>(R.id.list)
+                val gr: MutableList<String> = mutableListOf()
+                val grr = db.studyGroupDAO().getStudyGroup()
+                val mapId = mutableMapOf<Int, Long>()
+                grr.forEachIndexed{index, entity->
+                    gr += entity.abbr
+                    mapId[index] = entity.id!!.toLong()
+                }
+                val arrayAdapter: ArrayAdapter<*>
+                arrayAdapter = ArrayAdapter(this, R.layout.item, gr)
+                ll.adapter = arrayAdapter
+                val mBuilder = AlertDialog.Builder(this).setView(mDialogView)
+                val mAlertDialog = mBuilder.show()
+                ll.onItemClickListener = AdapterView.OnItemClickListener { _, _, p2, _ ->
+                        val pp = mapId[p2]!!
+                        val journal = db.journalDAO().getJournal(id_journ)
+                        val insId = db.flowStudentsDAO().insertFlowStudents(FlowStudents(id_journal = id_journ, id_group = pp))
+                        showToast(message = "В журнал $id_journ: \"$journal.note\" добавлена группа $grr[p2].abbr!")
+                        mAlertDialog.dismiss()
+                    }
+
+            }
+        }
+    }
     private fun showToast(context: Context = applicationContext, message: String, duration: Int = Toast.LENGTH_LONG) {
         Toast.makeText(context, message, duration).show()
     }
