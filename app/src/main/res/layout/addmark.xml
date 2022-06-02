@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="20dp"
@@ -16,52 +16,58 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_weight="1"
-            android:text="Название"
+            android:text="Оценка"
             android:textSize="20sp"
             android:textStyle="bold" />
 
         <EditText
-            android:id="@+id/etClassTitle"
+            android:id="@+id/etMark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Напишите название" />
-
-        <TextView
-            android:id="@+id/textView9"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Тип занятия"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/spinnerclasstype"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:editable="true"
+            android:inputType="numberDecimal"
+            android:maxLength="3"
             tools:ignore="SpeakableTextPresentCheck" />
-
-        <TextView
-            android:id="@+id/tvDate"
-            android:layout_width="match_parent"
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Дата"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:text ="Оценка"
+            android:layout_weight="1" >
 
-    <CalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+            <RadioButton
+                android:id="@+id/rb60"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="60" />
+            <RadioButton
+                android:id="@+id/rb75"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="75" />
+            <RadioButton
+                android:id="@+id/rb80"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="80" />
+            <RadioButton
+                android:id="@+id/rb90"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="90" />
+            <RadioButton
+                android:id="@+id/rb100"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100" />
+        </RadioGroup>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

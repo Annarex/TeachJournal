@@ -14,7 +14,7 @@ import com.donntu.teachjournal.db.utils.Converters
     AttendMarkType::class, FlowStudents::class, Journal::class, Student::class,
     StudyAttendMark::class, StudyClass::class, StudyClassType::class, StudyGroup::class,
     StudyTaskMark::class, Subject::class, Task::class, TaskMarkType::class, TaskType::class),
-    version = 2, exportSchema = false)
+    version = 3, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class DBJournalHelper: RoomDatabase() {
     abstract fun flowStudentsDAO(): FlowStudentsDAO
