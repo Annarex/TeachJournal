@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity()
                 when(position){
                     1 -> {
                         showdialog(R.layout.addtype,2)
+
                     }
                     2 -> {
                         when(db.subjectDAO().getSubject().count()){
@@ -163,11 +164,11 @@ class MainActivity : AppCompatActivity()
         when(id_journal){
             0L -> showToast(message = "Журнал не выбран!")
             else -> {
+                clearLayout()
                 showTable(id_journal)
             }
         }
     }
-    @SuppressLint("InflateParams")
     private fun showListGroupAndStudents(idJournal: Long) {
         clearLayout()
         val ll = findViewById<LinearLayout>(R.id.layout2)
