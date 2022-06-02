@@ -16,7 +16,7 @@ import java.io.Serializable
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("id_study_mark_type"),
         onDelete = ForeignKey.CASCADE)),
-    indices = [Index(value = ["id_study_class"]),Index(value = ["id_student"]),Index(value = ["id_study_mark_type"])]
+    indices = [Index(value = ["id_study_class"]),Index(value = ["id_student"]),Index(value = ["id_study_mark_type"]),Index(value = ["id_study_class","id_student"], unique = true)]
 )
 
 class StudyAttendMark (

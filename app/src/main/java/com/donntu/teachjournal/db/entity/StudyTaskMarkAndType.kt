@@ -16,15 +16,15 @@ import java.io.Serializable
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("id_task_mark_type"),
         onDelete = ForeignKey.CASCADE)),
-    indices = [Index(value = ["id_task"]),Index(value = ["id_student"]),Index(value = ["id_task_mark_type"])]
+    indices = [Index(value = ["id_task"]),Index(value = ["id_student"]),Index(value = ["id_task_mark_type"]),Index(value = ["id_task","id_student"], unique = true)]
 )
 class StudyTaskMark (
     @PrimaryKey(autoGenerate = true)
     val id: Long? = null,
     val id_task:Long,
     val id_student: Long,
-    val id_task_mark_type: Long,
-    val mark: String
+    var id_task_mark_type: Long,
+    var mark: String
 ): Serializable
 
 @Entity(tableName = "TaskMarkType")

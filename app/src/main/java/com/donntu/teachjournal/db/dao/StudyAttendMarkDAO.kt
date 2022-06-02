@@ -15,7 +15,7 @@ interface StudyAttendMarkDAO {
     @Query("SELECT * FROM StudyAttendMark")
     fun getStudyAttendMark(): List<StudyAttendMarkWithInfo>
 
-    @Query("SELECT sc.id as id, * FROM StudyAttendMark as sam, StudyClass as sc where sc.id = sam.id_study_class and sc.id_journal=:id_journal and sam.id_student =:id_student")
+    @Query("SELECT *, sam.id as id FROM StudyAttendMark as sam, StudyClass as sc where sc.id = sam.id_study_class and sc.id_journal=:id_journal and sam.id_student =:id_student")
     fun getStudyAttendMarkByIdJournalAndIdStudent(id_journal:Long, id_student: Long): List<StudyAttendMarkWithInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -24,7 +24,10 @@ interface StudyAttendMarkDAO {
     @Delete
     fun deleteStudyAttendMark(amp: StudyAttendMark)
 
-    @Update
+    @Query("Delete FROM StudyAttendMark where id = :id")
+    fun deleteStudyAttendMark(id: Long)
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     fun updateStudyAttendMark(amp: StudyAttendMark)
 
     @Query("SELECT * FROM AttendMarkType")
