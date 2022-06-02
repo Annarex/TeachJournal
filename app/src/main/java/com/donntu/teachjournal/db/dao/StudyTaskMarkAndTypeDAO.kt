@@ -10,6 +10,7 @@ interface StudyTaskMarkAndTypeDAO {
     fun getStudyTaskMarks(): List<StudyTaskMarkWithInfo>
 
     @Query("SELECT *, stm.id as id FROM StudyTaskMark as stm, Task as t where t.id = stm.id_task and t.id_journal=:id_journal and stm.id_student =:id_student")
+
     fun getStudyTaskMarksByIdJournalAndIdStudent(id_journal:Long, id_student: Long): List<StudyTaskMarkWithInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
